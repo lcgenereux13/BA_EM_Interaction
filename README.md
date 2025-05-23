@@ -28,3 +28,8 @@ python iterative_crew.py
 ```
 
 The script expects a local LLM accessible at `http://localhost:11434`.
+
+
+Important: https://github.com/CopilotKit/CopilotKit/tree/main/docs/content/docs/crewai-crews
+
+
