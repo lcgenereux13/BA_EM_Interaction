@@ -1,0 +1,213 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 20 14.3% 4.1%;
+  --muted: 60 4.8% 95.9%;
+  --muted-foreground: 25 5.3% 44.7%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 20 14.3% 4.1%;
+  --card: 0 0% 100%;
+  --card-foreground: 20 14.3% 4.1%;
+  --border: 20 5.9% 90%;
+  --input: 20 5.9% 90%;
+  --primary: 207 90% 54%;
+  --primary-foreground: 211 100% 99%;
+  --secondary: 60 4.8% 95.9%;
+  --secondary-foreground: 24 9.8% 10%;
+  --accent: 120 100% 32%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 84.2% 60.2%;
+  --destructive-foreground: 60 9.1% 97.8%;
+  --ring: 20 14.3% 4.1%;
+  --radius: 0.5rem;
+  
+  /* Agent colors */
+  --agent-1: 207 90% 42%;  /* Analyst - blue */
+  --agent-2: 120 61% 34%;  /* Content Writer - green */
+  --agent-3: 271 81% 56%;  /* Manager - purple */
+  --agent-4: 0 75% 55%;    /* QA - red */
+}
+
+.dark {
+  --background: 240 10% 3.9%;
+  --foreground: 0 0% 98%;
+  --muted: 240 3.7% 15.9%;
+  --muted-foreground: 240 5% 64.9%;
+  --popover: 240 10% 3.9%;
+  --popover-foreground: 0 0% 98%;
+  --card: 240 10% 3.9%;
+  --card-foreground: 0 0% 98%;
+  --border: 240 3.7% 15.9%;
+  --input: 240 3.7% 15.9%;
+  --primary: 207 90% 54%;
+  --primary-foreground: 211 100% 99%;
+  --secondary: 240 3.7% 15.9%;
+  --secondary-foreground: 0 0% 98%;
+  --accent: 120 61% 45%;
+  --accent-foreground: 0 0% 100%;
+  --destructive: 0 62.8% 30.6%;
+  --destructive-foreground: 0 0% 98%;
+  --ring: 240 4.9% 83.9%;
+  --radius: 0.5rem;
+  
+  /* Agent colors - slightly brighter for dark mode */
+  --agent-1: 207 90% 54%;  /* Analyst - blue */
+  --agent-2: 120 61% 45%;  /* Content Writer - green */
+  --agent-3: 271 81% 66%;  /* Manager - purple */
+  --agent-4: 0 75% 65%;    /* QA - red */
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+@layer components {
+  .bg-agent-1 {
+    background-color: hsl(var(--agent-1) / 0.15);
+  }
+  
+  .bg-agent-2 {
+    background-color: hsl(var(--agent-2) / 0.15);
+  }
+  
+  .bg-agent-3 {
+    background-color: hsl(var(--agent-3) / 0.15);
+  }
+  
+  .bg-agent-4 {
+    background-color: hsl(var(--agent-4) / 0.15);
+  }
+  
+  .border-agent-1 {
+    border-color: hsl(var(--agent-1));
+  }
+  
+  .border-agent-2 {
+    border-color: hsl(var(--agent-2));
+  }
+  
+  .border-agent-3 {
+    border-color: hsl(var(--agent-3));
+  }
+  
+  .border-agent-4 {
+    border-color: hsl(var(--agent-4));
+  }
+  
+  .text-agent-1 {
+    color: hsl(var(--agent-1));
+  }
+  
+  .text-agent-2 {
+    color: hsl(var(--agent-2));
+  }
+  
+  .text-agent-3 {
+    color: hsl(var(--agent-3));
+  }
+  
+  .text-agent-4 {
+    color: hsl(var(--agent-4));
+  }
+  
+  .agent-bubble {
+    @apply flex items-center justify-center w-10 h-10 rounded-full text-white text-xl font-medium;
+  }
+  
+  .agent-bubble-1 {
+    background-color: hsl(var(--agent-1));
+  }
+  
+  .agent-bubble-2 {
+    background-color: hsl(var(--agent-2));
+  }
+  
+  .agent-bubble-3 {
+    background-color: hsl(var(--agent-3));
+  }
+  
+  .agent-bubble-4 {
+    background-color: hsl(var(--agent-4));
+  }
+  
+  .agent-message {
+    @apply relative py-4 px-5 rounded-lg border border-transparent transition-all duration-300;
+  }
+  
+  .agent-message-1 {
+    @apply bg-agent-1 border-agent-1;
+  }
+  
+  .agent-message-2 {
+    @apply bg-agent-2 border-agent-2;
+  }
+  
+  .agent-message-3 {
+    @apply bg-agent-3 border-agent-3;
+  }
+  
+  .agent-message-4 {
+    @apply bg-agent-4 border-agent-4;
+  }
+  
+  .chat-container {
+    @apply h-full overflow-y-auto;
+  }
+  
+  .document-section {
+    @apply p-3 border border-border rounded-md mb-2 transition-all hover:border-primary cursor-pointer;
+  }
+  
+  .document-section.active {
+    @apply border-primary bg-primary/5;
+  }
+  
+  .message-bubble {
+    @apply flex items-start gap-4 mb-6 relative max-w-4xl mx-auto;
+  }
+  
+  .markdown-content {
+    @apply prose prose-sm dark:prose-invert max-w-none;
+  }
+  
+  .markdown-content pre {
+    @apply bg-muted p-2 rounded-md text-xs;
+  }
+  
+  .typing-indicator {
+    @apply inline-flex space-x-1;
+  }
+  
+  .typing-indicator span {
+    @apply w-1.5 h-1.5 bg-foreground/60 rounded-full animate-pulse;
+  }
+  
+  .typing-indicator span:nth-child(2) {
+    animation-delay: 0.2s;
+  }
+  
+  .typing-indicator span:nth-child(3) {
+    animation-delay: 0.4s;
+  }
+  
+  .agent-instruction-tooltip {
+    @apply absolute z-50 w-64 p-3 bg-popover shadow-lg rounded-md border border-border text-sm invisible opacity-0 transition-all duration-300 -translate-y-2;
+  }
+  
+  .agent-bubble:hover + .agent-instruction-tooltip {
+    @apply visible opacity-100 translate-y-0;
+  }
+  
+  .stream-highlighted {
+    @apply text-yellow-500 font-medium;
+  }
+}
