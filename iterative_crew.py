@@ -3,6 +3,8 @@ from typing import List, Dict, AsyncGenerator, Tuple
 import json
 import ast
 import asyncio
+import queue
+import threading
 
 from crewai import Crew, Agent, Task, LLM
 
@@ -191,46 +193,74 @@ class CopilotCrewAgent:
             planning=False,
         )
 
-    async def stream(self, prompt: str) -> AsyncGenerator[Tuple[str, str], None]:
-        """Yield (agent_name, token) pairs while refining the slide."""
+    async def stream(self, prompt: str) -> AsyncGenerator[Tuple[str, str, int], None]:
+        """Yield (agent_name, token, run) tuples as soon as they are produced."""
         research = prompt
-        for i in range(1, self.max_iters + 1):
-            out = self.crew.kickoff(
-                {
-                    "research": research,
-                    "current_plan": json.dumps(self.crew.draft),
-                    "feedback": self.crew.feedback,
-                }
-            )
+        for run in range(1, self.max_iters + 1):
+            token_queue: queue.Queue[Tuple[str, str]] = queue.Queue()
+            finished = threading.Event()
+            current_agent = "crew"
+            rating = 0
+            new_dict: Dict[str, List[Dict[str, List[str]]]] = {}
+            review_dict: Dict[str, List[Dict[str, str]]] = {}
 
-            slide_out, review_out = out.tasks_output
+            def on_agent_start(src, event):
+                nonlocal current_agent
+                if event.agent is analyst:
+                    current_agent = "analyst"
+                elif event.agent is manager:
+                    current_agent = "manager"
 
-            if getattr(slide_out, "pydantic", None):
-                new_dict = slide_out.pydantic.model_dump()
-            else:
-                new_dict = self.crew._extract_json(slide_out.raw)
+            def on_chunk(src, event):
+                token_queue.put((current_agent, event.chunk))
 
-            review_dict = self.crew._extract_json(review_out.raw)
-            rating = review_dict.get("rating", 0)
+            crewai_event_bus.on(AgentExecutionStartedEvent)(on_agent_start)
+            crewai_event_bus.on(LLMStreamChunkEvent)(on_chunk)
 
-            for tok in slide_out.raw.split():
-                yield "analyst", tok
-                await asyncio.sleep(0)
+            def run_kickoff():
+                nonlocal rating, new_dict, review_dict
+                out = self.crew.kickoff(
+                    {
+                        "research": research,
+                        "current_plan": json.dumps(self.crew.draft),
+                        "feedback": self.crew.feedback,
+                    }
+                )
 
-            for tok in review_out.raw.split():
-                yield "manager", tok
-                await asyncio.sleep(0)
+                slide_out, review_out = out.tasks_output
 
-            if rating >= self.threshold:
-                self.crew.draft = new_dict
-                break
+                if getattr(slide_out, "pydantic", None):
+                    new_dict = slide_out.pydantic.model_dump()
+                else:
+                    new_dict = self.crew._extract_json(slide_out.raw)
+
+                review_dict = self.crew._extract_json(review_out.raw)
+                rating = review_dict.get("rating", 0)
+                finished.set()
+
+            kickoff_thread = threading.Thread(target=run_kickoff)
+            kickoff_thread.start()
+
+            while not finished.is_set() or not token_queue.empty():
+                try:
+                    agent_name, token = token_queue.get(timeout=0.1)
+                    yield agent_name, token, run
+                except queue.Empty:
+                    await asyncio.sleep(0.05)
+
+            kickoff_thread.join()
+            crewai_event_bus._handlers[AgentExecutionStartedEvent].remove(on_agent_start)
+            crewai_event_bus._handlers[LLMStreamChunkEvent].remove(on_chunk)
 
             self.crew.draft = new_dict
             self.crew.feedback = "\n".join(
                 f"{c['element']}: {c['comment']}" for c in review_dict.get("comments", [])
             )
 
-        yield "crew", json.dumps(self.crew.draft)
+            if rating >= self.threshold:
+                break
+
+        yield "crew", json.dumps(self.crew.draft), run
 
 
 # 7) Run the loop

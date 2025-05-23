@@ -41,9 +41,9 @@ async def fake_agent_stream(prompt: str):
         ("agent2", "Reviewing response"),
         ("agent1", "Finalizing output"),
     ]
-    for agent, text in messages:
+    for run, (agent, text) in enumerate(messages, start=1):
         for token in text.split():
-            yield agent, token
+            yield agent, token, run
             await asyncio.sleep(0.2)
 
 
@@ -54,16 +54,16 @@ async def copilot_agent_stream(prompt: str):
 
     # Retrieve the streaming crew agent registered below
     agent = kit.get_agent("crew")
-    async for token in agent.stream(prompt):
-        yield agent.name, token
+    async for agent_name, token, run in agent.stream(prompt):
+        yield agent_name, token, run
 
 
 @app.get("/stream")
 async def stream(prompt: str):
     async def event_generator():
         stream_fn = copilot_agent_stream if kit else fake_agent_stream
-        async for agent, token in stream_fn(prompt):
-            data = json.dumps({"agent": agent, "token": token})
+        async for agent, token, run in stream_fn(prompt):
+            data = json.dumps({"agent": agent, "token": token, "run": run})
             yield f"data: {data}\n\n"
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 

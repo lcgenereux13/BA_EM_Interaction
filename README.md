@@ -13,7 +13,7 @@ This repository contains a simple example of two agents iteratively creating and
    ```bash
    uvicorn app:app --reload
    ```
-3. Open `http://localhost:8000/` in your browser. Enter a prompt and press **Start Crew** to kick off the crew. The tokens from each agent stream to the page in real time with the analyst avatar on the left and the manager avatar on the right.
+3. Open `http://localhost:8000/` in your browser. Enter a prompt and press **Start Crew** to kick off the crew. Tokens from each agent now stream to the page in real time. Each batch of messages is grouped under a "Run N" heading so you can follow the crew's iterative passes.
 
 `app.py` registers the iterative crew as a CopilotKit agent named `crew`. When
 the `copilotkit` package is available, the UI streams tokens from this agent in
