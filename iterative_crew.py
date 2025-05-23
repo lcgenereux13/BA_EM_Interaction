@@ -6,10 +6,9 @@ import asyncio
 import threading
 import queue
 
-try:  # prefer new import path where available
-    from crewai.utilities.events import crewai_event_bus
-except Exception:  # pragma: no cover - fallback for older crewai versions
-    from crewai.utilities.events.crewai_event_bus import crewai_event_bus
+# crewai exposes the event bus directly from the events module
+# older versions used the same location, so no fallback is needed
+from crewai.utilities.events import crewai_event_bus
 from crewai.utilities.events.llm_events import LLMStreamChunkEvent
 from crewai.utilities.events.agent_events import AgentExecutionStartedEvent
 
