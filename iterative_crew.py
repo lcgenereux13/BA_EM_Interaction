@@ -170,40 +170,35 @@ class IterativeCrew(Crew):
                 i += 1
             return "".join(result)
 
+        def _strip_outer_braces(text: str) -> str:
+            """Recursively remove duplicate outer braces."""
+            trimmed = text.strip()
+            while trimmed.startswith("{{") and trimmed.endswith("}}"):
+                trimmed = trimmed[1:-1].strip()
+            return trimmed
+
         try:
             return json.loads(blob)
         except json.JSONDecodeError:
             pass
 
-        # strip outer braces if the model duplicated them
+        # Extract potential JSON substring
         trimmed = blob.strip()
-        if trimmed.startswith("{{") and trimmed.endswith("}}"):
-            trimmed = trimmed[1:-1].strip()
-            try:
-                return json.loads(trimmed)
-            except json.JSONDecodeError:
-                try:
-                    return json.loads(_convert_single_quotes(trimmed))
-                except json.JSONDecodeError:
-                    pass
-            blob = trimmed
+        start = trimmed.find("{")
+        end = trimmed.rfind("}")
+        candidate = trimmed[start : end + 1] if start != -1 and end != -1 and end > start else trimmed
 
-        start = blob.find("{")
-        end = blob.rfind("}")
-        if start != -1 and end != -1 and end > start:
-            sub = blob[start : end + 1]
+        candidate = _strip_outer_braces(candidate)
+
+        for attempt in (candidate, _convert_single_quotes(candidate)):
             try:
-                return json.loads(sub)
+                return json.loads(attempt)
             except json.JSONDecodeError:
-                # attempt with single quote conversion
-                try:
-                    return json.loads(_convert_single_quotes(sub))
-                except json.JSONDecodeError:
-                    pass
+                continue
 
         # final fallback
         try:
-            return ast.literal_eval(blob)
+            return ast.literal_eval(candidate)
         except Exception as e:
             raise ValueError(f"Unable to parse JSON from:\n{blob}") from e
 
