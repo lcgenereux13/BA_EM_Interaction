@@ -58,19 +58,18 @@
 <body>
 <h1>Agent Chat</h1>
 <div id="chat"></div>
-<form id="form">
+<div style="margin-bottom:1em;">
     <input id="prompt" type="text" style="width: 80%;" />
-    <button type="submit">Start Crew</button>
-</form>
+    <button id="start" type="button">Start Crew</button>
+</div>
 <script>
 const chatDiv = document.getElementById('chat');
-const form = document.getElementById('form');
+const startBtn = document.getElementById('start');
 const promptInput = document.getElementById('prompt');
 let lastAgent = null;
 let lastContent = null;
 
-form.addEventListener('submit', async (e) => {
-    e.preventDefault();
+startBtn.addEventListener('click', async () => {
     chatDiv.innerHTML = '';
     lastAgent = null;
     lastContent = null;
