@@ -3,7 +3,13 @@ from typing import List, Dict
 import json
 import ast
 
-from crewai import Crew, Agent, Task
+from crewai import Crew, Agent, Task, LLM
+
+# Use a local Ollama instance for all LLM interactions
+ollama_llm = LLM(
+    model="ollama/qwen2.5:3b_lcg",
+    base_url="http://localhost:11434",
+)
 
 class SlideStructure(BaseModel):
     title: str
@@ -25,7 +31,7 @@ analyst = Agent(
     ),
     verbose=True,
     allow_delegation=False,
-    llm="gpt-4"
+    llm=ollama_llm
 )
 
 create_page = Task(
@@ -70,7 +76,7 @@ manager = Agent(
     ),
     verbose=True,
     allow_delegation=False,
-    llm="gpt-4"
+    llm=ollama_llm
 )
 
 review_slide = Task(
