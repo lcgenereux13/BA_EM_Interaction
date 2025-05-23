@@ -16,6 +16,7 @@ from crewai import Crew, Agent, Task, LLM
 ollama_llm = LLM(
     model="ollama/qwen2.5:3b_lcg",
     base_url="http://localhost:11434",
+    stream=True,
 )
 
 class SlideStructure(BaseModel):
@@ -65,7 +66,8 @@ create_page = Task(
         "}}"
     ),
     expected_output='A JSON with slide "title", "subtitle", and a list of sections containing "section_title" and "section_bullets".',
-    output_pydantic=SlideStructure,
+    # Parsing through instructor often fails with local models. We'll parse the JSON ourselves.
+    output_pydantic=None,
     agent=analyst
 )
 
