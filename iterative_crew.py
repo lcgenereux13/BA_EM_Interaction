@@ -3,6 +3,12 @@ from typing import List, Dict, AsyncGenerator, Tuple
 import json
 import ast
 import asyncio
+import threading
+import queue
+
+from crewai.utilities.events import crewai_event_bus
+from crewai.utilities.events.llm_events import LLMStreamChunkEvent
+from crewai.utilities.events.agent_events import AgentExecutionStartedEvent
 
 from crewai import Crew, Agent, Task, LLM
 
@@ -195,14 +201,48 @@ class CopilotCrewAgent:
         """Yield (agent_name, token, run) tuples while refining the slide."""
         research = prompt
         for i in range(1, self.max_iters + 1):
-            out = self.crew.kickoff(
-                {
-                    "research": research,
-                    "current_plan": json.dumps(self.crew.draft),
-                    "feedback": self.crew.feedback,
-                }
-            )
+            token_q: "queue.Queue[Tuple[str, str]]" = queue.Queue()
+            current_agent = ""
 
+            def on_agent_started(source, event: AgentExecutionStartedEvent) -> None:
+                nonlocal current_agent
+                role = event.agent.role
+                if role == analyst.role:
+                    current_agent = "analyst"
+                elif role == manager.role:
+                    current_agent = "manager"
+
+            def on_chunk(source, event: LLMStreamChunkEvent) -> None:
+                token_q.put((current_agent or "crew", event.chunk))
+
+            with crewai_event_bus.scoped_handlers():
+                crewai_event_bus.register_handler(AgentExecutionStartedEvent, on_agent_started)
+                crewai_event_bus.register_handler(LLMStreamChunkEvent, on_chunk)
+
+                result_container = {}
+
+                def run_kickoff():
+                    result_container["out"] = self.crew.kickoff(
+                        {
+                            "research": research,
+                            "current_plan": json.dumps(self.crew.draft),
+                            "feedback": self.crew.feedback,
+                        }
+                    )
+
+                t = threading.Thread(target=run_kickoff)
+                t.start()
+
+                while t.is_alive() or not token_q.empty():
+                    try:
+                        agent_name, token = token_q.get_nowait()
+                        yield agent_name, token, i
+                    except queue.Empty:
+                        await asyncio.sleep(0.05)
+
+                t.join()
+
+            out = result_container["out"]
             slide_out, review_out = out.tasks_output
 
             if getattr(slide_out, "pydantic", None):
@@ -212,15 +252,6 @@ class CopilotCrewAgent:
 
             review_dict = self.crew._extract_json(review_out.raw)
             rating = review_dict.get("rating", 0)
-
-            for tok in slide_out.raw.split():
-                yield "analyst", tok, i
-                await asyncio.sleep(0)
-
-            for tok in review_out.raw.split():
-                yield "manager", tok, i
-                await asyncio.sleep(0)
-
             if rating >= self.threshold:
                 self.crew.draft = new_dict
                 break
