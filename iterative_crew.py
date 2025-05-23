@@ -307,7 +307,9 @@ class CopilotCrewAgent:
                 f"{c['element']}: {c['comment']}" for c in review_dict.get("comments", [])
             )
 
-        yield "crew", json.dumps(self.crew.draft), i
+        # expose the current draft as a separate event so the UI can render it
+        # distinctly from normal chat tokens
+        yield "draft", json.dumps(self.crew.draft), i
 
 
 # 7) Run the loop

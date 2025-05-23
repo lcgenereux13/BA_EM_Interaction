@@ -6,14 +6,32 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            max-width: 800px;
+            max-width: 1000px;
             margin: auto;
+        }
+
+        #container {
+            display: flex;
+            gap: 20px;
+        }
+
+        #chat-container {
+            width: 60%;
         }
 
         #chat {
             max-height: 80vh;
             overflow-y: auto;
             margin-bottom: 1em;
+        }
+
+        #canvas {
+            width: 40%;
+            border: 1px solid #ccc;
+            padding: 10px;
+            max-height: 80vh;
+            overflow-y: auto;
+            background: #fff;
         }
 
         .chat-message {
@@ -57,27 +75,64 @@
 </head>
 <body>
 <h1>Agent Chat</h1>
-<div id="chat"></div>
-<div style="margin-bottom:1em;">
-    <input id="prompt" type="text" style="width: 80%;" />
-    <button id="start" type="button">Start Crew</button>
+<div id="container">
+  <div id="chat-container">
+      <div id="chat"></div>
+      <div style="margin-bottom:1em;">
+          <textarea id="prompt" style="width:100%;height:4em;"></textarea>
+          <button id="start" type="button">Start Crew</button>
+      </div>
+  </div>
+  <div id="canvas"></div>
 </div>
 <script>
 const chatDiv = document.getElementById('chat');
 const startBtn = document.getElementById('start');
 const promptInput = document.getElementById('prompt');
+const canvasDiv = document.getElementById('canvas');
 let lastAgent = null;
 let lastContent = null;
 let currentRun = 0;
+
+function renderDraft(draft) {
+    canvasDiv.innerHTML = '';
+    if (!draft) return;
+    const title = document.createElement('h2');
+    title.textContent = draft.title || 'Untitled';
+    canvasDiv.appendChild(title);
+    const subtitle = document.createElement('h4');
+    subtitle.textContent = draft.subtitle || '';
+    canvasDiv.appendChild(subtitle);
+    (draft.sections || []).forEach(sec => {
+        const sTitle = document.createElement('h3');
+        sTitle.textContent = sec.section_title;
+        canvasDiv.appendChild(sTitle);
+        const ul = document.createElement('ul');
+        (sec.section_bullets || []).forEach(b => {
+            const li = document.createElement('li');
+            li.textContent = b;
+            ul.appendChild(li);
+        });
+        canvasDiv.appendChild(ul);
+    });
+}
 
 startBtn.addEventListener('click', async () => {
     chatDiv.innerHTML = '';
     lastAgent = null;
     lastContent = null;
     currentRun = 0;
+    canvasDiv.innerHTML = '';
     const evtSource = new EventSource('/stream?prompt=' + encodeURIComponent(promptInput.value));
     evtSource.onmessage = (e) => {
         const data = JSON.parse(e.data);
+        if (data.agent === 'draft') {
+            try {
+                const draft = JSON.parse(data.token);
+                renderDraft(draft);
+            } catch {}
+            return;
+        }
         if (data.run !== currentRun) {
             currentRun = data.run;
             const runHeader = document.createElement('h3');
