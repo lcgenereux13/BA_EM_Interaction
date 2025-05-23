@@ -140,7 +140,7 @@ class IterativeCrew(Crew):
         """
 
         def _convert_single_quotes(s: str) -> str:
-            """Convert single-quoted strings to JSON compatible double quotes."""
+            """Convert single-quoted JSON to double-quoted JSON."""
             result: list[str] = []
             in_string = False
             i = 0
@@ -154,15 +154,16 @@ class IterativeCrew(Crew):
                         prev = s[i - 1] if i > 0 else ""
                         nxt = s[i + 1] if i + 1 < len(s) else ""
                         if prev == "\\":
+                            # Escaped quote, keep as-is
                             result.append("'")
-                        elif prev.isalnum() and nxt.isalnum():
-                            # Apostrophe inside a word, keep as-is
+                        elif nxt.isalpha():
+                            # Apostrophe inside a word (e.g. B.C.'s)
                             result.append("'")
                         else:
                             result.append('"')
                             in_string = False
                 elif c == '"' and in_string:
-                    # escape double quotes inside the string
+                    # Escape double quotes inside a single-quoted string
                     result.append('\\"')
                 else:
                     result.append(c)

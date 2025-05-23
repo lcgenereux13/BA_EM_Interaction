@@ -39,10 +39,10 @@
             align-items: flex-start;
             margin: 8px 0;
         }
-        .chat-message.agent1 {
+        .chat-message.analyst {
             flex-direction: row;
         }
-        .chat-message.agent2 {
+        .chat-message.manager {
             flex-direction: row-reverse;
         }
 
@@ -57,19 +57,24 @@
             font-weight: bold;
             margin: 0 8px;
         }
-        .agent1 .avatar {
+        .analyst .avatar {
             background: #007bff;
         }
-        .agent2 .avatar {
-            background: #28a745;
+        .manager .avatar {
+            background: #004085;
         }
 
         .message-content {
-            background: #f1f1f1;
             padding: 8px 12px;
             border-radius: 8px;
             max-width: 70%;
             word-wrap: break-word;
+        }
+        .chat-message.analyst .message-content {
+            background: #f7f7f7;
+        }
+        .chat-message.manager .message-content {
+            background: #e0e0e0;
         }
     </style>
 </head>
