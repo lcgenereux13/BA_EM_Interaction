@@ -1,7 +1,8 @@
 from pydantic import BaseModel, Field
-from typing import List, Dict
+from typing import List, Dict, AsyncGenerator, Tuple
 import json
 import ast
+import asyncio
 
 from crewai import Crew, Agent, Task, LLM
 
@@ -175,6 +176,61 @@ class IterativeCrew(Crew):
 
         print("⚠️ Reached max iterations; returning latest draft.")
         return SlideStructure(**self.draft)
+
+
+class CopilotCrewAgent:
+    """Expose the iterative crew as a streaming agent for CopilotKit."""
+
+    def __init__(self, threshold: int = 5, max_iters: int = 3):
+        self.name = "crew"
+        self.threshold = threshold
+        self.max_iters = max_iters
+        self.crew = IterativeCrew(
+            agents=[analyst, manager],
+            tasks=[create_page, review_slide],
+            planning=False,
+        )
+
+    async def stream(self, prompt: str) -> AsyncGenerator[Tuple[str, str], None]:
+        """Yield (agent_name, token) pairs while refining the slide."""
+        research = prompt
+        for i in range(1, self.max_iters + 1):
+            out = self.crew.kickoff(
+                {
+                    "research": research,
+                    "current_plan": json.dumps(self.crew.draft),
+                    "feedback": self.crew.feedback,
+                }
+            )
+
+            slide_out, review_out = out.tasks_output
+
+            if getattr(slide_out, "pydantic", None):
+                new_dict = slide_out.pydantic.model_dump()
+            else:
+                new_dict = self.crew._extract_json(slide_out.raw)
+
+            review_dict = self.crew._extract_json(review_out.raw)
+            rating = review_dict.get("rating", 0)
+
+            for tok in slide_out.raw.split():
+                yield "analyst", tok
+                await asyncio.sleep(0)
+
+            for tok in review_out.raw.split():
+                yield "manager", tok
+                await asyncio.sleep(0)
+
+            if rating >= self.threshold:
+                self.crew.draft = new_dict
+                break
+
+            self.crew.draft = new_dict
+            self.crew.feedback = "\n".join(
+                f"{c['element']}: {c['comment']}" for c in review_dict.get("comments", [])
+            )
+
+        yield "crew", json.dumps(self.crew.draft)
 
 
 # 7) Run the loop
