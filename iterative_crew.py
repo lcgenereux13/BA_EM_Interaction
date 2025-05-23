@@ -8,7 +8,7 @@ import queue
 
 # crewai exposes the event bus directly from the events module
 # older versions used the same location, so no fallback is needed
-from crewai.utilities.events import crewai_event_bus
+from crewai.utilities.events import default_emitter as crewai_event_bus
 from crewai.utilities.events.llm_events import LLMStreamChunkEvent
 from crewai.utilities.events.agent_events import AgentExecutionStartedEvent
 
