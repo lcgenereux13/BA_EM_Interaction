@@ -1,6 +1,7 @@
 # BA_EM_Interaction
 
 This repository contains a simple example of two agents iteratively creating and reviewing slide content. A minimal web interface built with FastAPI streams tokens from each agent as they converse.
+The `static/index.html` page now uses Tailwind CSS and an improved layout inspired by the React components located in the `frontend` directory. All application logic remains unchanged and still communicates with the `/stream` endpoint for real-time updates.
 
 ## Running the demo UI
 
