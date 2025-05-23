@@ -15,7 +15,9 @@ This repository contains a simple example of two agents iteratively creating and
    ```
 3. Open `http://localhost:8000/` in your browser. Enter a prompt to watch the agents stream their responses.
 
-`app.py` will automatically use your CopilotKit agent if the library is installed and `CopilotKit.get_agent("agent")` is defined. Otherwise a fake stream is used for demonstration.
+`app.py` registers the iterative crew as a CopilotKit agent named `crew`. When
+the `copilotkit` package is available, the UI streams tokens from this agent in
+real time. Otherwise a small fake generator is used for demonstration.
 
 ## Running the iterative crew script
 

@@ -4,11 +4,23 @@ from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
-# Placeholder imports for CopilotKit and agents
+# Simple wrapper to mimic a minimal CopilotKit interface
 try:
-    from copilotkit import CopilotKit
-except ImportError:  # pragma: no cover - library likely missing in this env
-    CopilotKit = None
+    from copilotkit import CopilotKitRemoteEndpoint as RealCopilotKit
+except Exception:  # pragma: no cover - library likely missing in this env
+    RealCopilotKit = None
+
+class SimpleCopilotKit:
+    """Minimal agent registry used if the real CopilotKit is unavailable."""
+
+    def __init__(self):
+        self._agents = {}
+
+    def register_agent(self, name: str, agent) -> None:
+        self._agents[name] = agent
+
+    def get_agent(self, name: str):
+        return self._agents.get(name)
 
 app = FastAPI()
 app.mount("/", StaticFiles(directory="static", html=True), name="static")
@@ -34,9 +46,8 @@ async def copilot_agent_stream(prompt: str):
     if kit is None:
         raise RuntimeError("CopilotKit is not installed")
 
-    # This assumes you have configured a CopilotKit agent elsewhere in your code
-    # named "agent" that exposes an async `stream` method yielding text tokens.
-    agent = kit.get_agent("agent")
+    # Retrieve the streaming crew agent registered below
+    agent = kit.get_agent("crew")
     async for token in agent.stream(prompt):
         yield agent.name, token
 
@@ -51,6 +62,13 @@ async def stream(prompt: str):
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 
-# placeholder CopilotKit integration
-kit = CopilotKit() if CopilotKit else None
+# Instantiate and register the crew agent
+from iterative_crew import CopilotCrewAgent
+
+if RealCopilotKit:
+    kit = SimpleCopilotKit()
+else:
+    kit = SimpleCopilotKit()
+
+kit.register_agent("crew", CopilotCrewAgent())
 
