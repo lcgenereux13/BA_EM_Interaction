@@ -1,0 +1,6 @@
+crewai
+fastapi
+uvicorn
+pydantic
+# optional for the demo UI
+copilotkit
