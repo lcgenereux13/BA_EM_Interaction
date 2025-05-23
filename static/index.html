@@ -113,9 +113,19 @@ function renderDraft(draft) {
         sTitle.textContent = sec.section_title;
         canvasDiv.appendChild(sTitle);
         const ul = document.createElement('ul');
+        const bulletToString = (bullet) => {
+            if (bullet == null) return '';
+            if (typeof bullet === 'string') return bullet;
+            if (typeof bullet === 'object') {
+                if ('text' in bullet) return bullet.text;
+                if ('bullet' in bullet) return bullet.bullet;
+                return JSON.stringify(bullet);
+            }
+            return String(bullet);
+        };
         (sec.section_bullets || []).forEach(b => {
             const li = document.createElement('li');
-            li.textContent = b;
+            li.textContent = bulletToString(b);
             ul.appendChild(li);
         });
         canvasDiv.appendChild(ul);
