@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Agent Chat</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; }
+        .message { padding: 4px 0; }
+        .agent1 { color: blue; }
+        .agent2 { color: green; }
+    </style>
+</head>
+<body>
+<h1>Agent Chat</h1>
+<div id="chat"></div>
+<form id="form">
+    <input id="prompt" type="text" style="width: 80%;" />
+    <button type="submit">Send</button>
+</form>
+<script>
+const chatDiv = document.getElementById('chat');
+const form = document.getElementById('form');
+const promptInput = document.getElementById('prompt');
+
+form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    chatDiv.innerHTML = '';
+    const evtSource = new EventSource('/stream?prompt=' + encodeURIComponent(promptInput.value));
+    evtSource.onmessage = (e) => {
+        const data = JSON.parse(e.data);
+        const div = document.createElement('div');
+        div.className = 'message ' + data.agent;
+        div.textContent = data.agent + ': ' + data.token;
+        chatDiv.appendChild(div);
+    };
+    evtSource.onerror = () => {
+        evtSource.close();
+    };
+});
+</script>
+</body>
+</html>
