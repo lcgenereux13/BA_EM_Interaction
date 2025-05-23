@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <title>Agent Chat</title>
+    <link rel="stylesheet" href="/static/style.css">
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -32,6 +33,7 @@
             max-height: 80vh;
             overflow-y: auto;
             background: #fff;
+            border-radius: 4px;
         }
 
         .chat-message {
@@ -84,11 +86,11 @@
   <div id="chat-container">
       <div id="chat"></div>
       <div style="margin-bottom:1em;">
-          <textarea id="prompt" style="width:100%;height:4em;"></textarea>
+          <textarea id="prompt" style="width:100%;height:4em;" placeholder="Describe the research topic..."></textarea>
           <button id="start" type="button">Start Crew</button>
       </div>
   </div>
-  <div id="canvas"></div>
+  <div id="canvas" class="draft copilotKitWindow"></div>
 </div>
 <script>
 const chatDiv = document.getElementById('chat');
@@ -98,38 +100,72 @@ const canvasDiv = document.getElementById('canvas');
 let lastAgent = null;
 let lastContent = null;
 let currentRun = 0;
+let previousDraft = null;
 
 function renderDraft(draft) {
     canvasDiv.innerHTML = '';
     if (!draft) return;
+    const bulletToString = (bullet) => {
+        if (bullet == null) return '';
+        if (typeof bullet === 'string') return bullet;
+        if (typeof bullet === 'object') {
+            if ('text' in bullet) return bullet.text;
+            if ('bullet' in bullet) return bullet.bullet;
+            return JSON.stringify(bullet);
+        }
+        return String(bullet);
+    };
+
+    const diffText = (oldText, newText) => {
+        if (oldText == null || oldText === newText) return newText || '';
+        return `<s>${oldText}</s> <em>${newText}</em>`;
+    };
+
     const title = document.createElement('h2');
-    title.textContent = draft.title || 'Untitled';
+    title.innerHTML = previousDraft ? diffText(previousDraft.title, draft.title || 'Untitled') : (draft.title || 'Untitled');
     canvasDiv.appendChild(title);
+
     const subtitle = document.createElement('h4');
-    subtitle.textContent = draft.subtitle || '';
+    subtitle.innerHTML = previousDraft ? diffText(previousDraft.subtitle, draft.subtitle || '') : (draft.subtitle || '');
     canvasDiv.appendChild(subtitle);
-    (draft.sections || []).forEach(sec => {
+
+    const oldSections = (previousDraft && previousDraft.sections) ? previousDraft.sections : [];
+    (draft.sections || []).forEach((sec, i) => {
+        const oldSec = oldSections[i] || {};
         const sTitle = document.createElement('h3');
-        sTitle.textContent = sec.section_title;
+        sTitle.innerHTML = diffText(oldSec.section_title, sec.section_title);
         canvasDiv.appendChild(sTitle);
         const ul = document.createElement('ul');
-        const bulletToString = (bullet) => {
-            if (bullet == null) return '';
-            if (typeof bullet === 'string') return bullet;
-            if (typeof bullet === 'object') {
-                if ('text' in bullet) return bullet.text;
-                if ('bullet' in bullet) return bullet.bullet;
-                return JSON.stringify(bullet);
-            }
-            return String(bullet);
-        };
-        (sec.section_bullets || []).forEach(b => {
+        const newBullets = sec.section_bullets || [];
+        const oldBullets = oldSec.section_bullets || [];
+        const maxLen = Math.max(newBullets.length, oldBullets.length);
+        for (let j = 0; j < maxLen; j++) {
             const li = document.createElement('li');
-            li.textContent = bulletToString(b);
+            const newB = newBullets[j] !== undefined ? bulletToString(newBullets[j]) : null;
+            const oldB = oldBullets[j] !== undefined ? bulletToString(oldBullets[j]) : null;
+            li.innerHTML = diffText(oldB, newB);
             ul.appendChild(li);
-        });
+        }
         canvasDiv.appendChild(ul);
     });
+
+    if (oldSections.length > (draft.sections || []).length) {
+        for (let i = (draft.sections || []).length; i < oldSections.length; i++) {
+            const oldSec = oldSections[i];
+            const sTitle = document.createElement('h3');
+            sTitle.innerHTML = `<s>${oldSec.section_title}</s>`;
+            canvasDiv.appendChild(sTitle);
+            const ul = document.createElement('ul');
+            (oldSec.section_bullets || []).forEach(b => {
+                const li = document.createElement('li');
+                li.innerHTML = `<s>${bulletToString(b)}</s>`;
+                ul.appendChild(li);
+            });
+            canvasDiv.appendChild(ul);
+        }
+    }
+
+    previousDraft = JSON.parse(JSON.stringify(draft));
 }
 
 startBtn.addEventListener('click', async () => {
