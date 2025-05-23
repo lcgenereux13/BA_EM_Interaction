@@ -299,18 +299,19 @@ class CopilotCrewAgent:
 
             review_dict = self.crew._extract_json(review_out.raw)
             rating = review_dict.get("rating", 0)
+
+            # update the current draft after each pass so the UI can render it
+            # incrementally as the analyst iterates on the slide
+            self.crew.draft = new_dict
+            yield "draft", json.dumps(self.crew.draft), i
+
             if rating >= self.threshold:
-                self.crew.draft = new_dict
                 break
 
-            self.crew.draft = new_dict
             self.crew.feedback = "\n".join(
                 f"{c['element']}: {c['comment']}" for c in review_dict.get("comments", [])
             )
 
-        # expose the current draft as a separate event so the UI can render it
-        # distinctly from normal chat tokens
-        yield "draft", json.dumps(self.crew.draft), i
 
 
 # 7) Run the loop
