@@ -306,6 +306,8 @@ FDI: Strong inflows into energy, mining, and tech; continued confidence in Canad
         planning=False
     )
     final_slide = crew.refine_until_good(research_report)
+    if not final_slide.title:
+        final_slide.title = "Untitled Slide"
 
     print("\n=== FINAL SLIDE STRUCTURE ===")
     print(final_slide.model_dump_json(indent=2))
