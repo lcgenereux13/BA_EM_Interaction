@@ -23,7 +23,13 @@ class SimpleCopilotKit:
         return self._agents.get(name)
 
 app = FastAPI()
-app.mount("/", StaticFiles(directory="static", html=True), name="static")
+app.mount("/static", StaticFiles(directory="static"), name="static")
+
+
+@app.get("/", response_class=HTMLResponse)
+def index() -> HTMLResponse:
+    with open("static/index.html", "r", encoding="utf-8") as f:
+        return HTMLResponse(f.read())
 
 
 async def fake_agent_stream(prompt: str):
