@@ -68,14 +68,24 @@ const startBtn = document.getElementById('start');
 const promptInput = document.getElementById('prompt');
 let lastAgent = null;
 let lastContent = null;
+let currentRun = 0;
 
 startBtn.addEventListener('click', async () => {
     chatDiv.innerHTML = '';
     lastAgent = null;
     lastContent = null;
+    currentRun = 0;
     const evtSource = new EventSource('/stream?prompt=' + encodeURIComponent(promptInput.value));
     evtSource.onmessage = (e) => {
         const data = JSON.parse(e.data);
+        if (data.run !== currentRun) {
+            currentRun = data.run;
+            const runHeader = document.createElement('h3');
+            runHeader.textContent = 'Run ' + currentRun;
+            chatDiv.appendChild(runHeader);
+            lastAgent = null;
+            lastContent = null;
+        }
         if (lastAgent !== data.agent) {
             lastAgent = data.agent;
             const msgDiv = document.createElement('div');

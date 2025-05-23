@@ -191,8 +191,8 @@ class CopilotCrewAgent:
             planning=False,
         )
 
-    async def stream(self, prompt: str) -> AsyncGenerator[Tuple[str, str], None]:
-        """Yield (agent_name, token) pairs while refining the slide."""
+    async def stream(self, prompt: str) -> AsyncGenerator[Tuple[str, str, int], None]:
+        """Yield (agent_name, token, run) tuples while refining the slide."""
         research = prompt
         for i in range(1, self.max_iters + 1):
             out = self.crew.kickoff(
@@ -214,11 +214,11 @@ class CopilotCrewAgent:
             rating = review_dict.get("rating", 0)
 
             for tok in slide_out.raw.split():
-                yield "analyst", tok
+                yield "analyst", tok, i
                 await asyncio.sleep(0)
 
             for tok in review_out.raw.split():
-                yield "manager", tok
+                yield "manager", tok, i
                 await asyncio.sleep(0)
 
             if rating >= self.threshold:
@@ -230,7 +230,7 @@ class CopilotCrewAgent:
                 f"{c['element']}: {c['comment']}" for c in review_dict.get("comments", [])
             )
 
-        yield "crew", json.dumps(self.crew.draft)
+        yield "crew", json.dumps(self.crew.draft), i
 
 
 # 7) Run the loop
