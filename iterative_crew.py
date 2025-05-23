@@ -175,6 +175,19 @@ class IterativeCrew(Crew):
         except json.JSONDecodeError:
             pass
 
+        # strip outer braces if the model duplicated them
+        trimmed = blob.strip()
+        if trimmed.startswith("{{") and trimmed.endswith("}}"):
+            trimmed = trimmed[1:-1].strip()
+            try:
+                return json.loads(trimmed)
+            except json.JSONDecodeError:
+                try:
+                    return json.loads(_convert_single_quotes(trimmed))
+                except json.JSONDecodeError:
+                    pass
+            blob = trimmed
+
         start = blob.find("{")
         end = blob.rfind("}")
         if start != -1 and end != -1 and end > start:
