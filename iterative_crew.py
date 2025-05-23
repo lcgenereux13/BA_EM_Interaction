@@ -145,7 +145,8 @@ class IterativeCrew(Crew):
             print(f"\n––– pass {i} –––")
             out = self.kickoff({
                 "research":     research,
-                "current_plan": self.draft,
+                # crewai expects strings for interpolation variables
+                "current_plan": json.dumps(self.draft),
                 "feedback":     self.feedback
             })
 
