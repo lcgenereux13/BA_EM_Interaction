@@ -48,14 +48,14 @@ create_page = Task(
         "6. Review the structure for logical flow, clarity, and standalone readability.\n"
         "7. Modify the wording of all items such that they are action oriented and can be understand and read as standalone items.\n"
         "8. Return a JSON object in the format:\n"
-        "{\n"
+        "{{\n"
         "  'title': str,\n"
         "  'subtitle': str,\n"
         "  'sections': [\n"
-        "    { 'section_title': str, 'section_bullets': [str, str, ...] },\n"
+        "    {{ 'section_title': str, 'section_bullets': [str, str, ...] }},\n"
         "    ...\n"
         "  ]\n"
-        "}"
+        "}}"
     ),
     expected_output='A JSON with slide "title", "subtitle", and a list of sections containing "section_title" and "section_bullets".',
     output_pydantic=SlideStructure,
@@ -97,14 +97,14 @@ review_slide = Task(
     ),
     expected_output=(
         'A JSON with:\n'
-        '{\n'
+        '{{\n'
         '  "rating": int (1-5),\n'
         '  "comments": [\n'
-        '    { "element": str, "comment": str },\n'
+        '    {{ "element": str, "comment": str }},\n'
         '    ...\n'
         '  ],\n'
         '  "summary": str\n'
-        '}'
+        '}}'
     ),
     output_pydantic=None,
     agent=manager,
@@ -306,6 +306,8 @@ FDI: Strong inflows into energy, mining, and tech; continued confidence in Canad
         planning=False
     )
     final_slide = crew.refine_until_good(research_report)
+    if not final_slide.title:
+        final_slide.title = "Untitled Slide"
 
     print("\n=== FINAL SLIDE STRUCTURE ===")
     print(final_slide.model_dump_json(indent=2))
