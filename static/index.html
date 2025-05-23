@@ -4,10 +4,55 @@
     <meta charset="utf-8" />
     <title>Agent Chat</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: auto; }
-        .message { padding: 4px 0; }
-        .agent1 { color: blue; }
-        .agent2 { color: green; }
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: auto;
+        }
+
+        #chat {
+            max-height: 80vh;
+            overflow-y: auto;
+            margin-bottom: 1em;
+        }
+
+        .chat-message {
+            display: flex;
+            align-items: flex-start;
+            margin: 8px 0;
+        }
+        .chat-message.agent1 {
+            flex-direction: row;
+        }
+        .chat-message.agent2 {
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            margin: 0 8px;
+        }
+        .agent1 .avatar {
+            background: #007bff;
+        }
+        .agent2 .avatar {
+            background: #28a745;
+        }
+
+        .message-content {
+            background: #f1f1f1;
+            padding: 8px 12px;
+            border-radius: 8px;
+            max-width: 70%;
+            word-wrap: break-word;
+        }
     </style>
 </head>
 <body>
@@ -15,23 +60,39 @@
 <div id="chat"></div>
 <form id="form">
     <input id="prompt" type="text" style="width: 80%;" />
-    <button type="submit">Send</button>
+    <button type="submit">Start Crew</button>
 </form>
 <script>
 const chatDiv = document.getElementById('chat');
 const form = document.getElementById('form');
 const promptInput = document.getElementById('prompt');
+let lastAgent = null;
+let lastContent = null;
 
 form.addEventListener('submit', async (e) => {
     e.preventDefault();
     chatDiv.innerHTML = '';
+    lastAgent = null;
+    lastContent = null;
     const evtSource = new EventSource('/stream?prompt=' + encodeURIComponent(promptInput.value));
     evtSource.onmessage = (e) => {
         const data = JSON.parse(e.data);
-        const div = document.createElement('div');
-        div.className = 'message ' + data.agent;
-        div.textContent = data.agent + ': ' + data.token;
-        chatDiv.appendChild(div);
+        if (lastAgent !== data.agent) {
+            lastAgent = data.agent;
+            const msgDiv = document.createElement('div');
+            msgDiv.className = 'chat-message ' + data.agent;
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.textContent = data.agent === 'analyst' ? 'A' : data.agent === 'manager' ? 'M' : 'C';
+            msgDiv.appendChild(avatar);
+            const content = document.createElement('div');
+            content.className = 'message-content';
+            msgDiv.appendChild(content);
+            chatDiv.appendChild(msgDiv);
+            lastContent = content;
+        }
+        lastContent.textContent += data.token + ' ';
+        chatDiv.scrollTop = chatDiv.scrollHeight;
     };
     evtSource.onerror = () => {
         evtSource.close();
