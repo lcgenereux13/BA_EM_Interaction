@@ -127,27 +127,71 @@ class IterativeCrew(Crew):
 
     def _extract_json(self, blob: str) -> dict:
         """
-        1) Try strict json.loads(blob).
-        2) If that fails, grab substring from first '{' to last '}' and try json.loads.
-        3) If still fails, fallback to ast.literal_eval.
+        Parse a JSON or JSON-like string produced by the LLM.
+
+        Strategy:
+        1) Try ``json.loads`` directly.
+        2) If that fails, extract the substring between the first ``{"`` and
+           last ``}`` and attempt ``json.loads`` again.
+        3) If single quotes are used and contain unescaped apostrophes (e.g.
+           ``'There's ...'``), convert them to double quotes with a small
+           state machine and retry ``json.loads``.
+        4) As a last resort, fall back to ``ast.literal_eval``.
         """
+
+        def _convert_single_quotes(s: str) -> str:
+            """Convert single-quoted strings to JSON compatible double quotes."""
+            result: list[str] = []
+            in_string = False
+            i = 0
+            while i < len(s):
+                c = s[i]
+                if c == "'":
+                    if not in_string:
+                        result.append('"')
+                        in_string = True
+                    else:
+                        prev = s[i - 1] if i > 0 else ""
+                        nxt = s[i + 1] if i + 1 < len(s) else ""
+                        if prev == "\\":
+                            result.append("'")
+                        elif prev.isalnum() and nxt.isalnum():
+                            # Apostrophe inside a word, keep as-is
+                            result.append("'")
+                        else:
+                            result.append('"')
+                            in_string = False
+                elif c == '"' and in_string:
+                    # escape double quotes inside the string
+                    result.append('\\"')
+                else:
+                    result.append(c)
+                i += 1
+            return "".join(result)
+
         try:
             return json.loads(blob)
         except json.JSONDecodeError:
-            # attempt to grab the JSON object substring
-            start = blob.find("{")
-            end   = blob.rfind("}")
-            if start != -1 and end != -1 and end > start:
-                sub = blob[start:end+1]
+            pass
+
+        start = blob.find("{")
+        end = blob.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            sub = blob[start : end + 1]
+            try:
+                return json.loads(sub)
+            except json.JSONDecodeError:
+                # attempt with single quote conversion
                 try:
-                    return json.loads(sub)
+                    return json.loads(_convert_single_quotes(sub))
                 except json.JSONDecodeError:
                     pass
-            # final fallback
-            try:
-                return ast.literal_eval(blob)
-            except Exception as e:
-                raise ValueError(f"Unable to parse JSON from:\n{blob}") from e
+
+        # final fallback
+        try:
+            return ast.literal_eval(blob)
+        except Exception as e:
+            raise ValueError(f"Unable to parse JSON from:\n{blob}") from e
 
     def refine_until_good(self, research: str, threshold: int = 5, max_iters: int = 3) -> SlideStructure:
         for i in range(1, max_iters+1):
