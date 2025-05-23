@@ -252,7 +252,6 @@ class CopilotCrewAgent:
 
             review_dict = self.crew._extract_json(review_out.raw)
             rating = review_dict.get("rating", 0)
-
             if rating >= self.threshold:
                 self.crew.draft = new_dict
                 break
