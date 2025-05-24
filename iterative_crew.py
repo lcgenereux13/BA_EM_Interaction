@@ -53,7 +53,7 @@ analyst = Agent(
         "You follow McKinsey's hypothesis-driven approach and ensure each insight is backed by evidence.\n"
         "You expect your researchers to sequentially use the following tools: (a) web research, (b) unstructured data retrieval (RAG), (c) structured data retrieval.\n"
     ),
-    verbose=False,
+    verbose=True,
     allow_delegation=False,
     llm=ollama_llm
 )
@@ -99,7 +99,7 @@ manager = Agent(
         "- Spotting inconsistencies, vague statements, or misaligned messaging.\n\n"
         "You are methodical, direct, and hold slides to the highest standards of clarity, actionability, and insight. Your job is to flag every issue before a slide reaches the client."
     ),
-    verbose=False,
+    verbose=True,
     allow_delegation=False,
     llm=ollama_llm
 )
@@ -514,7 +514,7 @@ FDI: Strong inflows into energy, mining, and tech; continued confidence in Canad
     crew = IterativeCrew(
         agents=[analyst, manager],
         tasks=[create_page, review_slide],
-        planning=False
+        planning=True
     )
     final_slide = crew.refine_until_good(research_report)
     if not final_slide.title:
