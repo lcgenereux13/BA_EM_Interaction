@@ -141,6 +141,32 @@ class IterativeCrew(Crew):
     draft:    dict = Field(default_factory=lambda: {"title":"", "subtitle":"", "sections":[]})
     feedback: str  = ""
 
+    def _resolve_element_text(self, element: str) -> str:
+        """Return the text of the referenced slide element if possible."""
+        obj = self.draft
+        if not element or not isinstance(obj, dict):
+            return element
+
+        import re
+        # split like "sections[0].section_bullets[1]"
+        parts = re.findall(r"(\w+)(?:\[(\d+)\])?", element)
+        for key, index in parts:
+            if isinstance(obj, dict):
+                obj = obj.get(key)
+            else:
+                return element
+            if index:
+                try:
+                    obj = obj[int(index)]
+                except (IndexError, ValueError, TypeError):
+                    return element
+        if isinstance(obj, str):
+            return obj
+        try:
+            return json.dumps(obj)
+        except Exception:
+            return element
+
     def _extract_json(self, blob: str) -> dict:
         """
         Parse a JSON or JSON-like string produced by the LLM.
@@ -262,9 +288,11 @@ class IterativeCrew(Crew):
 
             # otherwise update for next pass
             self.draft    = new_dict
-            # flatten comments into a string
-            self.feedback = "\n".join(f"{c['element']}: {c['comment']}"
-                                      for c in review_dict.get("comments", []))
+            # flatten comments into a string, resolving element paths to text
+            self.feedback = "\n".join(
+                f"{self._resolve_element_text(c['element'])}: {c['comment']}"
+                for c in review_dict.get("comments", [])
+            )
 
         print("⚠️ Reached max iterations; returning latest draft.")
         return SlideStructure(**self.draft)
@@ -348,7 +376,8 @@ class CopilotCrewAgent:
                 break
 
             self.crew.feedback = "\n".join(
-                f"{c['element']}: {c['comment']}" for c in review_dict.get("comments", [])
+                f"{self.crew._resolve_element_text(c['element'])}: {c['comment']}"
+                for c in review_dict.get("comments", [])
             )
 
 
