@@ -328,8 +328,8 @@ export function PagemakingInterface() {
                       </div>
                     </div>
                     
-                    <div className="markdown-content pl-10 overflow-y-auto max-h-[400px] pr-2">
-                      <ReactMarkdown>{streamingMessage}</ReactMarkdown>
+                    <div className="pl-10 overflow-y-auto max-h-[400px] pr-2 whitespace-pre-wrap streaming-text font-sans">
+                      {streamingMessage}
                     </div>
                   </div>
                 )}
@@ -404,6 +404,7 @@ export function PagemakingInterface() {
           </div>
         </div>
         
+
         {/* Document Drafts Section - 60% height */}
         <div className="mb-6" style={{ height: '60%', overflowY: 'auto' }}>
           {drafts.length === 0 ? (
@@ -430,6 +431,7 @@ export function PagemakingInterface() {
           )}
         </div>
         
+
         {/* Dedicated Feedback Section - 40% height */}
         <div className="border border-border rounded-md p-4 mb-4" style={{ height: '40%', overflowY: 'auto' }}>
           <div className="flex items-center justify-between mb-3">

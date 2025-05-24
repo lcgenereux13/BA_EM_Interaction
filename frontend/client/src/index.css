@@ -269,3 +269,9 @@ code,
 .diff-removed {
   @apply bg-red-200 text-red-800 line-through;
 }
+
+/* Streaming message styling */
+.streaming-text {
+  @apply whitespace-pre-wrap break-words;
+
+}
