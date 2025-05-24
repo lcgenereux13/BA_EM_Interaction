@@ -2,6 +2,8 @@ import asyncio
 import json
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, StreamingResponse
+from pydantic import BaseModel
+from uuid import uuid4
 from fastapi.staticfiles import StaticFiles
 
 # Simple wrapper to mimic a minimal CopilotKit interface
@@ -25,11 +27,26 @@ class SimpleCopilotKit:
 app = FastAPI()
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
+# In-memory store for prompts keyed by a short ID
+PROMPTS: dict[str, str] = {}
+
 
 @app.get("/", response_class=HTMLResponse)
 def index() -> HTMLResponse:
     with open("static/index.html", "r", encoding="utf-8") as f:
         return HTMLResponse(f.read())
+
+
+class PromptIn(BaseModel):
+    prompt: str
+
+
+@app.post("/start")
+async def start(prompt_in: PromptIn) -> dict[str, str]:
+    """Store the prompt and return a short ID for streaming."""
+    pid = uuid4().hex
+    PROMPTS[pid] = prompt_in.prompt
+    return {"id": pid}
 
 
 async def fake_agent_stream(prompt: str):
@@ -58,13 +75,19 @@ async def copilot_agent_stream(prompt: str):
         yield agent_name, token, run
 
 
-@app.get("/stream")
-async def stream(prompt: str):
+@app.get("/stream/{pid}")
+async def stream(pid: str):
+    """Stream tokens for the prompt associated with ``pid``."""
+    prompt = PROMPTS.pop(pid, None)
+    if prompt is None:
+        return StreamingResponse(iter(()), media_type="text/event-stream")
+
     async def event_generator():
         stream_fn = copilot_agent_stream if kit else fake_agent_stream
         async for agent, token, run in stream_fn(prompt):
             data = json.dumps({"agent": agent, "token": token, "run": run})
             yield f"data: {data}\n\n"
+
     return StreamingResponse(event_generator(), media_type="text/event-stream")
 
 

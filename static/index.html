@@ -126,7 +126,13 @@ startBtn.addEventListener('click', async () => {
     lastContent = null;
     currentRun = 0;
     canvasDiv.innerHTML = '';
-    const evtSource = new EventSource('/stream?prompt=' + encodeURIComponent(promptInput.value));
+    const startResp = await fetch('/start', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ prompt: promptInput.value })
+    });
+    const { id } = await startResp.json();
+    const evtSource = new EventSource('/stream/' + id);
     evtSource.onmessage = (e) => {
         const data = JSON.parse(e.data);
         if (data.agent === 'draft') {
