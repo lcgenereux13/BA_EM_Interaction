@@ -55,6 +55,7 @@ let lastContent = null;
 let currentRun = 0;
 let previousDraft = null;
 let jsonIndent = 0;
+let diffTimer = null;
 
 function appendToken(el, token) {
     const parts = token.split(/\n/);
@@ -96,6 +97,8 @@ function appendToken(el, token) {
 function renderDraft(draft) {
     canvasDiv.innerHTML = '';
     if (!draft) return;
+    if (diffTimer) clearTimeout(diffTimer);
+    canvasDiv.classList.add('draft');
     const bulletToString = (bullet) => {
         if (bullet == null) return '';
 
@@ -164,6 +167,13 @@ function renderDraft(draft) {
     }
 
     previousDraft = JSON.parse(JSON.stringify(draft));
+    diffTimer = setTimeout(() => {
+        canvasDiv.querySelectorAll('s, em').forEach(el => {
+            const text = document.createTextNode(el.textContent);
+            el.replaceWith(text);
+        });
+        canvasDiv.classList.remove('draft');
+    }, 5000);
 }
 
 startBtn.addEventListener('click', async () => {
