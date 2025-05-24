@@ -156,10 +156,15 @@ class IterativeCrew(Crew):
             else:
                 return element
             if index:
+                num = int(index)
                 try:
-                    obj = obj[int(index)]
+                    obj = obj[num]
                 except (IndexError, ValueError, TypeError):
-                    return element
+                    # fall back to 1-based indexing if 0-based failed
+                    try:
+                        obj = obj[num - 1]
+                    except Exception:
+                        return element
         if isinstance(obj, str):
             return obj
         try:
