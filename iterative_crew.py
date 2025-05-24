@@ -19,6 +19,28 @@ ollama_llm = LLM(
     stream=True,
 )
 
+
+from pydantic import BaseModel, Field
+from typing import List
+
+class SlideSection(BaseModel):
+    section_title: str
+    section_bullets: List[str]
+
+class SlideStructure(BaseModel):
+    title: str
+    subtitle: str
+    sections: List[SlideSection]
+
+class ReviewComment(BaseModel):
+    element: str
+    comment: str
+
+class SlideReview(BaseModel):
+    rating: int = Field(..., ge=1, le=5, description="Overall rating from 1 to 5")
+    comments: List[ReviewComment]
+    summary: str
+
 class SlideStructure(BaseModel):
     title: str
     subtitle: str
@@ -67,7 +89,7 @@ create_page = Task(
     ),
     expected_output='A JSON with slide "title", "subtitle", and a list of sections containing "section_title" and "section_bullets".',
     # Parsing through instructor often fails with local models. We'll parse the JSON ourselves.
-    output_pydantic=None,
+    output_pydantic=SlideStructure,
     agent=analyst
 )
 
@@ -115,7 +137,7 @@ review_slide = Task(
         '  "summary": str\n'
         '}}'
     ),
-    output_pydantic=None,
+    output_pydantic=SlideReview,
     agent=manager,
     context=[create_page]
 )
