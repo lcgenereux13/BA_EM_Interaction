@@ -25,8 +25,12 @@ export function ChatInterface() {
   
   // Auto-scroll to bottom when new messages arrive or streaming content updates
   useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    const container = chatContainerRef.current;
+    if (container) {
+      const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 20;
+      if (isAtBottom) {
+        container.scrollTop = container.scrollHeight;
+      }
     }
   }, [messages, streamingMessage]);
   
@@ -118,8 +122,8 @@ export function ChatInterface() {
         </div>
         
         {/* Input Area */}
-        <div className="border-t border-border p-4">
-          <TaskInput 
+        <div className="border-t border-border p-4 sticky bottom-0 bg-background">
+          <TaskInput
             onSubmit={sendTask}
             isSubmitting={isLoading || streamingMessage !== null}
           />

@@ -41,11 +41,13 @@ export function PagemakingInterface() {
   
   // Auto-scroll to bottom when new messages arrive or streaming content updates
   useEffect(() => {
-    if (chatContainerRef.current) {
+    const container = chatContainerRef.current;
+    if (container) {
       // Add a small delay to ensure content is fully rendered before scrolling
       setTimeout(() => {
-        if (chatContainerRef.current) {
-          chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+        const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 20;
+        if (isAtBottom) {
+          container.scrollTop = container.scrollHeight;
         }
       }, 50);
     }
@@ -325,8 +327,8 @@ export function PagemakingInterface() {
         </div>
         
         {/* Input Area */}
-        <div className="border-t border-border p-4">
-          <TaskInput 
+        <div className="border-t border-border p-4 sticky bottom-0 bg-background">
+          <TaskInput
             onSubmit={handleResearchSubmit}
             isSubmitting={isLoading || streamingMessage !== null || completionStatus === 'in-progress'}
           />
