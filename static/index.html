@@ -43,7 +43,7 @@
     <main class="flex flex-1 overflow-hidden">
       <div
         id="chat-container"
-        class="w-[70%] flex flex-col relative"
+        class="w-[60%] flex flex-col relative"
       >
         <div id="chat" class="flex-1 overflow-y-auto px-4 py-6 space-y-4"></div>
         <div class="border-t px-4 py-3 bg-white sticky bottom-0 left-0 z-10">
@@ -54,7 +54,7 @@
 
       <div
         id="canvas"
-        class="w-[30%] p-6 overflow-y-auto border-l bg-white"
+        class="w-[40%] p-6 overflow-y-auto border-l bg-white"
       >
         <h2 class="font-semibold text-lg" id="canvas-title">Canvas</h2>
       </div>
@@ -258,7 +258,7 @@ startBtn.addEventListener('click', async () => {
             avatar.textContent = data.agent === 'analyst' ? 'A' : data.agent === 'manager' ? 'M' : 'C';
             msgDiv.appendChild(avatar);
             const content = document.createElement('div');
-            content.className = 'message-content whitespace-pre-wrap font-sans text-base leading-relaxed bg-gray-100 rounded px-3 py-2 max-w-[70%]';
+            content.className = 'message-content whitespace-pre-wrap font-sans text-base leading-relaxed bg-gray-100 rounded px-3 py-2 max-w-[60%]';
             msgDiv.appendChild(content);
             chatDiv.appendChild(msgDiv);
             lastContent = content;
