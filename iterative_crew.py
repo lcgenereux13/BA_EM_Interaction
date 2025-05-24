@@ -204,13 +204,28 @@ class IterativeCrew(Crew):
         end = trimmed.rfind("}")
         candidate = trimmed[start : end + 1] if start != -1 and end != -1 and end > start else trimmed
 
+        # remove common code block markers
+        candidate = candidate.replace("```", "")
         candidate = _strip_outer_braces(candidate)
 
-        for attempt in (candidate, _convert_single_quotes(candidate)):
+        attempts = [candidate, _convert_single_quotes(candidate)]
+
+        for attempt in attempts:
             try:
                 return json.loads(attempt)
             except json.JSONDecodeError:
-                continue
+                # try to auto-close brackets and braces if the JSON looks truncated
+                fix = attempt
+                braces = fix.count("{") - fix.count("}")
+                if braces > 0:
+                    fix += "}" * braces
+                brackets = fix.count("[") - fix.count("]")
+                if brackets > 0:
+                    fix += "]" * brackets
+                try:
+                    return json.loads(fix)
+                except json.JSONDecodeError:
+                    continue
 
         # final fallback
         try:
