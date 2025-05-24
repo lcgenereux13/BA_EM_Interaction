@@ -206,10 +206,14 @@ code,
 .diff-added {
   background-color: #bbf7d0;
   color: #065f46;
+  display: block;
+  padding: 2px 4px;
 }
 
 .diff-removed {
   background-color: #fecaca;
   color: #991b1b;
   text-decoration: line-through;
+  display: block;
+  padding: 2px 4px;
 }
