@@ -41,6 +41,50 @@ A dark/light theme is implemented via CSS variables, and the `@tailwindcss/typog
 the `copilotkit` package is available, the UI streams tokens from this agent in
 real time. Otherwise a small fake generator is used for demonstration.
 
+### Improved token streaming
+
+Tokens streamed from CrewAI sometimes contain JSON structures without line
+breaks. The `appendToken` helper in `static/index.html` now splits tokens on
+JSON punctuation and indents nested lists or objects so they display clearly as
+the data arrives.
+
+**Before**
+
+```
+Here is some text and a list [1,2,3] and a dict {'key': 'value', 'k2': [4, 5]} and a nested dict {'outer': {'inner': [6,7]}, 'another': 8}
+```
+
+**After**
+
+```
+Here is some text and a list
+[
+  1,
+  2,
+  3
+]
+
+and a dict
+{
+  'key': 'value',
+  'k2': [
+    4,
+    5
+  ]
+}
+
+and a nested dict
+{
+  'outer': {
+    'inner': [
+      6,
+      7
+    ]
+  },
+  'another': 8
+}
+```
+
 ## Running the iterative crew script
 
 With the dependencies installed, you can run `iterative_crew.py` directly:
