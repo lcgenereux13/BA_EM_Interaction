@@ -322,17 +322,28 @@ class CopilotCrewAgent:
         for i in range(1, self.max_iters + 1):
             token_q: "queue.Queue[Tuple[str, str]]" = queue.Queue()
             current_agent = ""
+            analyst_tokens: list[str] = []
 
             def on_agent_started(source, event: AgentExecutionStartedEvent) -> None:
-                nonlocal current_agent
+                nonlocal current_agent, analyst_tokens
                 role = event.agent.role
                 if role == analyst.role:
                     current_agent = "analyst"
                 elif role == manager.role:
+                    if current_agent == "analyst" and analyst_tokens:
+                        try:
+                            new_dict = self.crew._extract_json("".join(analyst_tokens))
+                            self.crew.draft = new_dict
+                            token_q.put(("draft", json.dumps(self.crew.draft)))
+                        except Exception:
+                            pass
+                        analyst_tokens = []
                     current_agent = "manager"
 
             def on_chunk(source, event: LLMStreamChunkEvent) -> None:
                 token_q.put((current_agent or "crew", event.chunk))
+                if current_agent == "analyst":
+                    analyst_tokens.append(event.chunk)
 
             with crewai_event_bus.scoped_handlers():
                 crewai_event_bus.register_handler(AgentExecutionStartedEvent, on_agent_started)
@@ -372,10 +383,9 @@ class CopilotCrewAgent:
             review_dict = self.crew._extract_json(review_out.raw)
             rating = review_dict.get("rating", 0)
 
-            # update the current draft after each pass so the UI can render it
-            # incrementally as the analyst iterates on the slide
+            # update the current draft after each pass in case parsing during
+            # streaming failed for any reason
             self.crew.draft = new_dict
-            yield "draft", json.dumps(self.crew.draft), i
 
             if rating >= self.threshold:
                 break
