@@ -126,8 +126,8 @@ function showDraftDiff(newDraft) {
     const diff = diffLines(oldMd, newMd);
     const diffMd = diff.map((p) => {
         if (p.type === 'same') return p.text;
-        if (p.type === 'add') return `<em>${p.text}</em>`;
-        if (p.type === 'remove') return `<s>${p.text}</s>`;
+        if (p.type === 'add') return `<span class="diff-added">${p.text}</span>`;
+        if (p.type === 'remove') return `<span class="diff-removed">${p.text}</span>`;
     }).join('\n');
     const mdParser = window.markdownit();
     const rendered = mdParser.render(diffMd);

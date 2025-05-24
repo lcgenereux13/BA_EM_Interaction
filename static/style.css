@@ -201,3 +201,15 @@ code,
   margin-bottom: 12px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
 }
+
+/* Diff highlight styles */
+.diff-added {
+  background-color: #bbf7d0;
+  color: #065f46;
+}
+
+.diff-removed {
+  background-color: #fecaca;
+  color: #991b1b;
+  text-decoration: line-through;
+}
