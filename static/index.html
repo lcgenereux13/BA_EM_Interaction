@@ -21,6 +21,19 @@
   </script>
   <link href="https://cdn.jsdelivr.net/npm/remixicon@3.5.0/fonts/remixicon.css" rel="stylesheet" />
   <link rel="stylesheet" href="/static/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.0/github-markdown-light.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/markdown-it/dist/markdown-it.min.js"></script>
+  <style>
+    .markdown-body {
+      font-family: system-ui, sans-serif;
+      color: #1f2937;
+      line-height: 1.75;
+      font-size: 16px;
+      max-width: 750px;
+      padding: 2rem;
+      margin: auto;
+    }
+  </style>
 </head>
   <body class="antialiased font-sans text-gray-800 bg-gray-50">
     <div class="flex flex-col h-screen">
@@ -124,11 +137,9 @@ function renderDraft(draft) {
         md += `\n`;
     });
 
-    const pre = document.createElement('pre');
-    pre.className = 'whitespace-pre-wrap';
-    pre.textContent = md.trim();
-    canvasDiv.innerHTML = '';
-    canvasDiv.appendChild(pre);
+    const mdParser = window.markdownit();
+    const rendered = mdParser.render(md.trim());
+    canvasDiv.innerHTML = `<div class="markdown-body">${rendered}</div>`;
     previousDraft = JSON.parse(JSON.stringify(draft));
 }
 
