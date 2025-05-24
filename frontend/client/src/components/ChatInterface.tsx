@@ -59,10 +59,10 @@ export function ChatInterface() {
   return (
     <div className="flex h-[calc(100vh-64px)] bg-background">
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col">
+      <div className="flex-1 flex flex-col relative">
         {/* Chat Messages */}
-        <div className="flex-1 overflow-hidden">
-          <div className="chat-container p-6" ref={chatContainerRef}>
+        <div className="absolute inset-0 overflow-y-auto">
+          <div className="chat-container p-6 pb-32" ref={chatContainerRef}>
             {messages.length === 0 && !streamingMessage ? (
               <div className="flex flex-col items-center justify-center h-full text-center">
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
@@ -122,7 +122,7 @@ export function ChatInterface() {
         </div>
         
         {/* Input Area */}
-        <div className="border-t border-border p-4 sticky bottom-0 bg-background">
+        <div className="absolute bottom-0 left-0 right-0 border-t border-border p-4 bg-background">
           <TaskInput
             onSubmit={sendTask}
             isSubmitting={isLoading || streamingMessage !== null}
