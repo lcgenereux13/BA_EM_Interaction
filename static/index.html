@@ -45,7 +45,9 @@
         id="chat-container"
         class="w-[60%] flex flex-col relative"
       >
-        <div id="chat" class="flex-1 overflow-y-auto px-4 py-6 space-y-4"></div>
+        <div id="chat" class="flex-1 overflow-y-auto px-4 py-6 space-y-4">
+          <h2 class="font-semibold text-lg" id="playground-title">Agent Playground</h2>
+        </div>
         <div class="border-t px-4 py-3 bg-white sticky bottom-0 left-0 z-10">
           <textarea id="prompt" class="w-full border rounded p-2" rows="4" placeholder="Describe the research topic..."></textarea>
           <button id="start" type="button" class="mt-2 px-4 py-2 bg-blue-600 text-white rounded">Start Crew</button>
@@ -232,7 +234,7 @@ function renderDraft(draft) {
 }
 
 startBtn.addEventListener('click', async () => {
-    chatDiv.innerHTML = '';
+    chatDiv.innerHTML = '<h2 class="font-semibold text-lg" id="playground-title">Agent Playground</h2>';
     lastAgent = null;
     lastContent = null;
     currentRun = 0;
@@ -246,6 +248,8 @@ startBtn.addEventListener('click', async () => {
     const evtSource = new EventSource('/stream/' + id);
     evtSource.onmessage = (e) => {
         const data = JSON.parse(e.data);
+        const placeholder = document.getElementById('playground-title');
+        if (placeholder) placeholder.remove();
         if (data.agent === 'draft') {
             try {
                 const draft = JSON.parse(data.token);
