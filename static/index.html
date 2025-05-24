@@ -154,9 +154,13 @@ function appendToken(el, token) {
     // that lacks line breaks will still be formatted nicely.
     const lines = token.split(/\n/);
     lines.forEach((line, idx) => {
-        if (!line && idx === 0) return;
-
-        if (idx > 0) {
+        if (line === '') {
+            if (!el.lastChild || el.lastChild.nodeName !== 'BR') {
+                el.appendChild(document.createElement('br'));
+            }
+            return;
+        }
+        if (idx > 0 && (!el.lastChild || el.lastChild.nodeName !== 'BR')) {
             el.appendChild(document.createElement('br'));
         }
 
