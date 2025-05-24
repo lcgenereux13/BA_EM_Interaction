@@ -1,7 +1,7 @@
 # BA_EM_Interaction
 
 This repository contains a simple example of two agents iteratively creating and reviewing slide content. A minimal web interface built with FastAPI streams tokens from each agent as they converse.
-The `static/index.html` page now uses Tailwind CSS and an improved layout inspired by the React components located in the `frontend` directory. All application logic remains unchanged and still communicates with the `/stream` endpoint for real-time updates.
+The `static/index.html` page now uses Tailwind CSS and an improved layout inspired by the React components located in the `frontend` directory. The UI posts your prompt to a new `/start` endpoint and then streams updates from `/stream/{id}` for real-time interaction.
 
 ## Running the demo UI
 
@@ -14,7 +14,7 @@ The `static/index.html` page now uses Tailwind CSS and an improved layout inspir
    ```bash
    uvicorn app:app --reload
    ```
-3. Open `http://localhost:8000/` in your browser. Enter a prompt and press **Start Crew** to kick off the crew. Tokens from each agent now stream to the page as soon as they are produced. Each batch of messages is grouped under a "Run N" heading so you can follow the crew's iterative passes.
+3. Open `http://localhost:8000/` in your browser. Enter a prompt and press **Start Crew** to kick off the crew. The page sends your prompt via `/start` and then streams tokens from `/stream/{id}` as they are produced. Each batch of messages is grouped under a "Run N" heading so you can follow the crew's iterative passes.
 
 `app.py` registers the iterative crew as a CopilotKit agent named `crew`. When
 the `copilotkit` package is available, the UI streams tokens from this agent in
