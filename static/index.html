@@ -52,13 +52,20 @@ function renderDraft(draft) {
     if (!draft) return;
     const bulletToString = (bullet) => {
         if (bullet == null) return '';
-        if (typeof bullet === 'string') return bullet;
-        if (typeof bullet === 'object') {
-            if ('text' in bullet) return bullet.text;
-            if ('bullet' in bullet) return bullet.bullet;
-            return JSON.stringify(bullet);
+
+        let str;
+        if (typeof bullet === 'string') {
+            str = bullet;
+        } else if (typeof bullet === 'object') {
+            if ('text' in bullet) str = bullet.text;
+            else if ('bullet' in bullet) str = bullet.bullet;
+            else str = JSON.stringify(bullet);
+        } else {
+            str = String(bullet);
         }
-        return String(bullet);
+
+        // strip common list markers like "-", "*", "•", or "1." from the start
+        return str.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, '').trim();
     };
 
     const diffText = (oldText, newText) => {
