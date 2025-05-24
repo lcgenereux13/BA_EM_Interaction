@@ -119,18 +119,18 @@ function renderDraft(draft) {
         return `<s>${oldText}</s> <em>${newText}</em>`;
     };
 
-    const title = document.createElement('h2');
+    const title = document.createElement('h1');
     title.innerHTML = previousDraft ? diffText(previousDraft.title, draft.title || 'Untitled') : (draft.title || 'Untitled');
     canvasDiv.appendChild(title);
 
-    const subtitle = document.createElement('h4');
+    const subtitle = document.createElement('h2');
     subtitle.innerHTML = previousDraft ? diffText(previousDraft.subtitle, draft.subtitle || '') : (draft.subtitle || '');
     canvasDiv.appendChild(subtitle);
 
     const oldSections = (previousDraft && previousDraft.sections) ? previousDraft.sections : [];
     (draft.sections || []).forEach((sec, i) => {
         const oldSec = oldSections[i] || {};
-        const sTitle = document.createElement('h3');
+        const sTitle = document.createElement('p');
         sTitle.innerHTML = diffText(oldSec.section_title, sec.section_title);
         canvasDiv.appendChild(sTitle);
         const ul = document.createElement('ul');
@@ -150,9 +150,9 @@ function renderDraft(draft) {
     if (oldSections.length > (draft.sections || []).length) {
         for (let i = (draft.sections || []).length; i < oldSections.length; i++) {
             const oldSec = oldSections[i];
-            const sTitle = document.createElement('h3');
-            sTitle.innerHTML = `<s>${oldSec.section_title}</s>`;
-            canvasDiv.appendChild(sTitle);
+        const sTitle = document.createElement('p');
+        sTitle.innerHTML = `<s>${oldSec.section_title}</s>`;
+        canvasDiv.appendChild(sTitle);
             const ul = document.createElement('ul');
             (oldSec.section_bullets || []).forEach(b => {
                 const li = document.createElement('li');
