@@ -150,7 +150,6 @@
 /* Global typography tweaks */
 pre,
 code,
-.message-content,
 .thought,
 .final-answer {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
