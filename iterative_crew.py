@@ -196,14 +196,11 @@ class IterativeCrew(Crew):
             except json.JSONDecodeError:
                 continue
 
-        # final fallbacks
-        for attempt in (candidate, _convert_single_quotes(candidate)):
-            try:
-                return ast.literal_eval(attempt)
-            except Exception:
-                continue
-
-        raise ValueError(f"Unable to parse JSON from:\n{blob}")
+        # final fallback
+        try:
+            return ast.literal_eval(candidate)
+        except Exception as e:
+            raise ValueError(f"Unable to parse JSON from:\n{blob}") from e
 
     def refine_until_good(self, research: str, threshold: int = 5, max_iters: int = 3) -> SlideStructure:
         for i in range(1, max_iters+1):
