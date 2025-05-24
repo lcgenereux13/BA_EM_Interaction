@@ -124,6 +124,7 @@ export function DraftDocument({
         result += `<span class="diff-removed">${rendered}</span>`;
       } else {
         result += rendered;
+
       }
     });
     return result;
