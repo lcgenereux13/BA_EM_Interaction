@@ -150,22 +150,26 @@ function showDraftDiff(newDraft) {
 }
 
 function appendToken(el, token) {
-    // Split the incoming token by newlines first so streaming JSON
-    // that lacks line breaks will still be formatted nicely.
+    // Split the incoming token by newlines so streamed JSON that lacks
+    // line breaks will still be formatted nicely without creating blank lines.
     const lines = token.split(/\n/);
     lines.forEach((line, idx) => {
-        if (line === '') {
-            if (!el.lastChild || el.lastChild.nodeName !== 'BR') {
-                el.appendChild(document.createElement('br'));
-            }
-            return;
-        }
-        if (idx > 0 && (!el.lastChild || el.lastChild.nodeName !== 'BR')) {
+        if (idx > 0) {
+            // Always move to a new line for each newline character, but
+            // avoid inserting an extra blank line when multiple newlines are
+            // represented by empty segments.
             el.appendChild(document.createElement('br'));
+            if (jsonIndent > 0) {
+                el.appendChild(document.createTextNode(' '.repeat(jsonIndent * 2)));
+            }
         }
 
-        // Further split by JSON punctuation so each key/value pair
-        // can be rendered on its own line as it streams in.
+        if (line === '') {
+            return;
+        }
+
+        // Further split by JSON punctuation so each key/value pair can be
+        // rendered on its own line as it streams in.
         const parts = line.split(/([{}\[\],])/g).filter(Boolean);
         parts.forEach((part) => {
             if (part === '{' || part === '[') {
@@ -182,7 +186,7 @@ function appendToken(el, token) {
                 if (jsonIndent > 0) {
                     el.appendChild(document.createTextNode(' '.repeat(jsonIndent * 2)));
                 }
-            } else if (part === ',') {
+            } else if (part === ',' && jsonIndent > 0) {
                 el.appendChild(document.createTextNode(part));
                 el.appendChild(document.createElement('br'));
                 if (jsonIndent > 0) {
