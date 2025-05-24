@@ -72,13 +72,13 @@ create_page = Task(
         "6. Review the structure for logical flow, clarity, and standalone readability.\n"
         "7. Modify the wording of all items such that they are action oriented and can be understand and read as standalone items.\n"
         "8. Return a JSON object in the format:\n"
-        "{{\n"
-        "  'title': str,\n"
-        "  'subtitle': str,\n"
-        "  'sections': [\n"
-        "    {{ 'section_title': str, 'section_bullets': [str, str, ...] }},\n"
-        "    ...\n"
-        "  ]\n"
+        "{{"
+        "  'title': str,"
+        "  'subtitle': str,"
+        "  'sections': ["
+        "    {{ 'section_title': str, 'section_bullets': [str, str, ...] }},"
+        "    ..."
+        "  ]"
         "}}"
     ),
     expected_output='A JSON with slide "title", "subtitle", and a list of sections containing "section_title" and "section_bullets".',
@@ -121,14 +121,14 @@ review_slide = Task(
         "Return your feedback as a JSON object containing an overall rating (1-5), a list of specific improvement comments (each tagged with a slide element), and a final summary recommendation."
     ),
     expected_output=(
-        'A JSON with:\n'
-        '{{\n'
-        '  "rating": int (1-5),\n'
-        '  "comments": [\n'
-        '    {{ "element": str, "comment": str }},\n'
-        '    ...\n'
-        '  ],\n'
-        '  "summary": str\n'
+        'A JSON with:'
+        '{{'
+        '  "rating": int (1-5),'
+        '  "comments": ['
+        '    {{ "element": str, "comment": str }},'
+        '    ...'
+        '  ],'
+        '  "summary": str'
         '}}'
     ),
     output_pydantic=SlideReview,
