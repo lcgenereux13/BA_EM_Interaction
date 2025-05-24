@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Dict, AsyncGenerator, Tuple
+from typing import List, AsyncGenerator, Tuple
 import json
 import ast
 import asyncio
@@ -20,8 +20,6 @@ ollama_llm = LLM(
 )
 
 
-from pydantic import BaseModel, Field
-from typing import List
 
 class SlideSection(BaseModel):
     section_title: str
@@ -41,10 +39,6 @@ class SlideReview(BaseModel):
     comments: List[ReviewComment]
     summary: str
 
-class SlideStructure(BaseModel):
-    title: str
-    subtitle: str
-    sections: List[Dict[str, List[str]]]
 
 analyst = Agent(
     role="McKinsey Business Analyst",
