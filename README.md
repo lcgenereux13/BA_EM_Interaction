@@ -3,6 +3,27 @@
 This repository contains a simple example of two agents iteratively creating and reviewing slide content. A minimal web interface built with FastAPI streams tokens from each agent as they converse.
 The `static/index.html` page now uses Tailwind CSS and an improved layout inspired by the React components located in the `frontend` directory. The UI posts your prompt to a new `/start` endpoint and then streams updates from `/stream/{id}` for real-time interaction.
 
+### UI styling
+
+The frontend uses the `new-york` design style from **shadcn/ui** and relies on the system font stack for a clean, modern look. The base body styles are defined in `client/src/index.css`:
+
+```css
+body {
+  @apply font-sans antialiased bg-background text-foreground;
+}
+```
+
+The design style is specified in `frontend/components.json`:
+
+```json
+{
+    "style": "new-york",
+    "...": "..."
+}
+```
+
+A dark/light theme is implemented via CSS variables, and the `@tailwindcss/typography` plugin is enabled in `tailwind.config.ts` to improve formatting of rich text content.
+
 ## Running the demo UI
 
 1. Install dependencies:
