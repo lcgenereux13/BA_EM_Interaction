@@ -1,5 +1,8 @@
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
+import MarkdownIt from "markdown-it";
+import { diffWords } from "diff";
+import { useMemo } from "react";
 
 export interface DocumentSectionProps {
   id: string;
@@ -85,23 +88,46 @@ export function DocumentSection({
   );
 }
 
-export function DraftDocument({ 
-  title, 
-  sections, 
-  feedback, 
-  isActive = false, 
+export function DraftDocument({
+  title,
+  sections,
+  feedback,
+  isActive = false,
   onClick,
   agentId = 1,
-  iteration = 0
+  iteration = 0,
+  prevSections,
+  showDiff = false,
 }: {
   title: string;
-  sections: {heading: string; content: string}[];
+  sections: { heading: string; content: string }[];
   feedback?: string;
   isActive?: boolean;
   onClick?: () => void;
   agentId?: number;
   iteration?: number;
+  prevSections?: { heading: string; content: string }[];
+  showDiff?: boolean;
 }) {
+  const md = useMemo(() => new MarkdownIt({ typographer: true, html: true }), []);
+
+  const renderMarkdown = (text: string) => md.render(text);
+
+  const diffText = (oldText: string, newText: string) => {
+    const changes = diffWords(oldText || "", newText);
+    let result = "";
+    changes.forEach(part => {
+      const rendered = md.renderInline(part.value);
+      if (part.added) {
+        result += `<span class="diff-added">${rendered}</span>`;
+      } else if (part.removed) {
+        result += `<span class="diff-removed">${rendered}</span>`;
+      } else {
+        result += rendered;
+      }
+    });
+    return result;
+  };
   return (
     <div 
       className={cn(
@@ -131,14 +157,16 @@ export function DraftDocument({
       </div>
       
       <div className="space-y-3 markdown-content max-h-96 overflow-y-auto p-2 bg-background border border-border rounded">
-        {sections.map((section, index) => (
-          <div key={index} className="mb-3">
-            <h4 className="text-sm font-medium border-b pb-1 mb-1">{section.heading}</h4>
-            <div className="text-xs text-muted-foreground">
-              <ReactMarkdown>{section.content}</ReactMarkdown>
+        {sections.map((section, index) => {
+          const prev = prevSections && prevSections[index];
+          const html = showDiff && prev ? diffText(prev.content, section.content) : renderMarkdown(section.content);
+          return (
+            <div key={index} className="mb-3">
+              <h4 className="text-sm font-medium border-b pb-1 mb-1">{section.heading}</h4>
+              <div className="text-xs text-muted-foreground" dangerouslySetInnerHTML={{ __html: html }} />
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
       
       {feedback && (

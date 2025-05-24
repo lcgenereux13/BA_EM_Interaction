@@ -180,11 +180,11 @@
   }
   
   .markdown-content pre {
-    @apply bg-muted/50 p-3 rounded-lg text-sm font-mono;
+    @apply bg-muted/50 p-3 rounded-lg text-sm;
   }
 
   .markdown-content code {
-    @apply bg-muted/50 px-1.5 py-0.5 rounded text-sm font-mono;
+    @apply bg-muted/50 px-1.5 py-0.5 rounded text-sm;
   }
   
   .typing-indicator {
@@ -216,7 +216,7 @@ pre,
 code,
 .thought,
 .final-answer {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: inherit;
   font-size: 14px;
   line-height: 1.6;
   letter-spacing: normal;
@@ -259,4 +259,13 @@ code,
   padding: 16px;
   margin-bottom: 12px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Diff highlight styles */
+.diff-added {
+  @apply bg-green-200 text-green-800;
+}
+
+.diff-removed {
+  @apply bg-red-200 text-red-800 line-through;
 }

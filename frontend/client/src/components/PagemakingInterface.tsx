@@ -33,11 +33,23 @@ export function PagemakingInterface() {
   
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<PageDraft[]>([]);
+  const [showDiffIndex, setShowDiffIndex] = useState<number | null>(null);
   const [currentIteration, setCurrentIteration] = useState(0);
   const [maxIterations, setMaxIterations] = useState(5);
   const [completionStatus, setCompletionStatus] = useState<'in-progress' | 'complete' | 'none'>('none');
   
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const prevDraftCount = useRef(0);
+
+  useEffect(() => {
+    if (drafts.length > prevDraftCount.current) {
+      setShowDiffIndex(drafts.length - 1);
+      const timer = setTimeout(() => setShowDiffIndex(null), 5000);
+      prevDraftCount.current = drafts.length;
+      return () => clearTimeout(timer);
+    }
+    prevDraftCount.current = drafts.length;
+  }, [drafts]);
   
   // Auto-scroll to bottom when new messages arrive or streaming content updates
   useEffect(() => {
@@ -392,8 +404,8 @@ export function PagemakingInterface() {
           </div>
         </div>
         
-        {/* Document Drafts Section - 70% height */}
-        <div className="mb-6" style={{ height: '70%', overflowY: 'auto' }}>
+        {/* Document Drafts Section - 60% height */}
+        <div className="mb-6" style={{ height: '60%', overflowY: 'auto' }}>
           {drafts.length === 0 ? (
             <div className="text-center p-6 border border-dashed border-border rounded-md text-muted-foreground">
               <i className="ri-draft-line text-2xl mb-2"></i>
@@ -410,14 +422,16 @@ export function PagemakingInterface() {
                   agentId={draft.agentId}
                   iteration={draft.iteration}
                   isActive={index === drafts.length - 1}
+                  prevSections={index > 0 ? drafts[index - 1].sections : undefined}
+                  showDiff={index === showDiffIndex}
                 />
               ))}
             </>
           )}
         </div>
         
-        {/* Dedicated Feedback Section - 30% height */}
-        <div className="border border-border rounded-md p-4 mb-4" style={{ height: '30%', overflowY: 'auto' }}>
+        {/* Dedicated Feedback Section - 40% height */}
+        <div className="border border-border rounded-md p-4 mb-4" style={{ height: '40%', overflowY: 'auto' }}>
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-md font-medium">Feedback History</h3>
             {drafts.filter(draft => draft.feedback).length > 0 ? (
