@@ -216,7 +216,7 @@ pre,
 code,
 .thought,
 .final-answer {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+  font-family: inherit;
   font-size: 14px;
   line-height: 1.6;
   letter-spacing: normal;

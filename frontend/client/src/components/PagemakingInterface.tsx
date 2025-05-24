@@ -404,8 +404,8 @@ export function PagemakingInterface() {
           </div>
         </div>
         
-        {/* Document Drafts Section - 70% height */}
-        <div className="mb-6" style={{ height: '70%', overflowY: 'auto' }}>
+        {/* Document Drafts Section - 60% height */}
+        <div className="mb-6" style={{ height: '60%', overflowY: 'auto' }}>
           {drafts.length === 0 ? (
             <div className="text-center p-6 border border-dashed border-border rounded-md text-muted-foreground">
               <i className="ri-draft-line text-2xl mb-2"></i>
@@ -430,8 +430,8 @@ export function PagemakingInterface() {
           )}
         </div>
         
-        {/* Dedicated Feedback Section - 30% height */}
-        <div className="border border-border rounded-md p-4 mb-4" style={{ height: '30%', overflowY: 'auto' }}>
+        {/* Dedicated Feedback Section - 40% height */}
+        <div className="border border-border rounded-md p-4 mb-4" style={{ height: '40%', overflowY: 'auto' }}>
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-md font-medium">Feedback History</h3>
             {drafts.filter(draft => draft.feedback).length > 0 ? (

@@ -117,12 +117,14 @@ export function DraftDocument({
     const changes = diffWords(oldText || "", newText);
     let result = "";
     changes.forEach(part => {
+      const rendered = md.renderInline(part.value);
       if (part.added) {
-        result += `<span class="diff-added">${part.value}</span>`;
+        result += `<span class="diff-added">${rendered}</span>`;
       } else if (part.removed) {
-        result += `<span class="diff-removed">${part.value}</span>`;
+        result += `<span class="diff-removed">${rendered}</span>`;
       } else {
-        result += part.value;
+        result += rendered;
+
       }
     });
     return result;
