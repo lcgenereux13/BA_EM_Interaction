@@ -127,8 +127,10 @@ function renderDraft(draft) {
         return String(bullet);
     };
 
-    let md = `# ${draft.title || ''}\n\n`;
-    md += `## ${draft.subtitle || ''}\n\n`;
+    // Render the slide title as an H2 and the subtitle as an H3 so the
+    // generated markdown has a single top-level header.
+    let md = `## ${draft.title || ''}\n\n`;
+    md += `### ${draft.subtitle || ''}\n\n`;
     (draft.sections || []).forEach((sec) => {
         md += `${sec.section_title || ''}\n`;
         (sec.section_bullets || []).forEach((b) => {
