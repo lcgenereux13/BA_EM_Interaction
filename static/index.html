@@ -72,6 +72,74 @@ let previousDraft = null;
 let jsonIndent = 0;
 let diffTimer = null;
 
+function draftToMarkdown(draft) {
+    if (!draft) return '';
+    const bulletToString = (bullet) => {
+        if (bullet == null) return '';
+        if (typeof bullet === 'string') return bullet;
+        if (typeof bullet === 'object') {
+            if ('text' in bullet) return bullet.text;
+            if ('bullet' in bullet) return bullet.bullet;
+            return JSON.stringify(bullet);
+        }
+        return String(bullet);
+    };
+
+    let md = `# ${draft.title || ''}\n\n`;
+    md += `## ${draft.subtitle || ''}\n\n`;
+    (draft.sections || []).forEach((sec) => {
+        md += `${sec.section_title || ''}\n`;
+        (sec.section_bullets || []).forEach((b) => {
+            md += `- ${bulletToString(b)}\n`;
+        });
+        md += `\n`;
+    });
+    return md.trim();
+}
+
+function diffLines(oldText, newText) {
+    const oldLines = oldText.split(/\n/);
+    const newLines = newText.split(/\n/);
+    let i = 0, j = 0;
+    const out = [];
+    while (i < oldLines.length && j < newLines.length) {
+        if (oldLines[i] === newLines[j]) {
+            out.push({type: 'same', text: oldLines[i]});
+            i++; j++;
+        } else if (oldLines[i + 1] === newLines[j]) {
+            out.push({type: 'remove', text: oldLines[i++]});
+        } else if (oldLines[i] === newLines[j + 1]) {
+            out.push({type: 'add', text: newLines[j++]});
+        } else {
+            out.push({type: 'remove', text: oldLines[i++]});
+            out.push({type: 'add', text: newLines[j++]});
+        }
+    }
+    while (i < oldLines.length) out.push({type: 'remove', text: oldLines[i++]});
+    while (j < newLines.length) out.push({type: 'add', text: newLines[j++]});
+    return out;
+}
+
+function showDraftDiff(newDraft) {
+    const oldMd = draftToMarkdown(previousDraft);
+    const newMd = draftToMarkdown(newDraft);
+    const diff = diffLines(oldMd, newMd);
+    const diffMd = diff.map((p) => {
+        if (p.type === 'same') return p.text;
+        if (p.type === 'add') return `<em>${p.text}</em>`;
+        if (p.type === 'remove') return `<s>${p.text}</s>`;
+    }).join('\n');
+    const mdParser = window.markdownit();
+    const rendered = mdParser.render(diffMd);
+    canvasDiv.innerHTML = `<div class="markdown-body draft">${rendered}</div>`;
+    canvasDiv.classList.add('draft');
+    if (diffTimer) clearTimeout(diffTimer);
+    diffTimer = setTimeout(() => {
+        renderDraft(newDraft);
+        diffTimer = null;
+    }, 5000);
+}
+
 function appendToken(el, token) {
     const parts = token.split(/\n/);
     parts.forEach((part, idx) => {
@@ -161,7 +229,11 @@ startBtn.addEventListener('click', async () => {
         if (data.agent === 'draft') {
             try {
                 const draft = JSON.parse(data.token);
-                renderDraft(draft);
+                if (previousDraft) {
+                    showDraftDiff(draft);
+                } else {
+                    renderDraft(draft);
+                }
             } catch {}
             return;
         }
