@@ -13,9 +13,9 @@
       <h1 class="text-xl font-semibold">Pagemaking Crew</h1>
     </header>
     <main class="flex flex-1 overflow-hidden">
-      <div id="chat-container" class="flex-1 flex flex-col">
+      <div id="chat-container" class="flex-1 flex flex-col relative">
         <div id="chat" class="flex-1 overflow-y-auto p-6 space-y-4"></div>
-        <div class="p-4 border-t bg-white sticky bottom-0">
+        <div class="p-4 border-t bg-white sticky bottom-0 left-0">
           <textarea id="prompt" class="w-full border rounded p-2" rows="4" placeholder="Describe the research topic..."></textarea>
           <button id="start" type="button" class="mt-2 px-4 py-2 bg-blue-600 text-white rounded">Start Crew</button>
         </div>
@@ -32,30 +32,41 @@ let lastAgent = null;
 let lastContent = null;
 let currentRun = 0;
 let previousDraft = null;
+let jsonIndent = 0;
 
 function appendToken(el, token) {
     const parts = token.split(/\n/);
     parts.forEach((part, idx) => {
         if (!part && idx === 0) return;
 
-        const trimmed = part.trim();
-        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
-            el.appendChild(document.createElement('br'));
-        }
-
         if (idx > 0) {
             el.appendChild(document.createElement('br'));
-            el.appendChild(document.createElement('br'));
         }
 
-        if (part) {
-            const last = el.textContent.slice(-1);
-            const needsSpace = last && !/\s/.test(last) && last !== '-' && !/^[.,!?;:]/.test(part);
-            el.textContent += (needsSpace ? ' ' : '') + part;
-        }
-
-        if (trimmed.endsWith('}') || trimmed.endsWith(']')) {
-            el.appendChild(document.createElement('br'));
+        for (const ch of part) {
+            if (ch === '{' || ch === '[') {
+                el.textContent += ch;
+                jsonIndent++;
+                el.appendChild(document.createElement('br'));
+                el.textContent += ' '.repeat(jsonIndent * 2);
+            } else if (ch === '}' || ch === ']') {
+                jsonIndent = Math.max(0, jsonIndent - 1);
+                el.appendChild(document.createElement('br'));
+                el.textContent += ' '.repeat(jsonIndent * 2);
+                el.textContent += ch;
+                el.appendChild(document.createElement('br'));
+                if (jsonIndent > 0) {
+                    el.textContent += ' '.repeat(jsonIndent * 2);
+                }
+            } else if (ch === ',' && jsonIndent > 0) {
+                el.textContent += ch;
+                el.appendChild(document.createElement('br'));
+                el.textContent += ' '.repeat(jsonIndent * 2);
+            } else {
+                const last = el.textContent.slice(-1);
+                const needsSpace = last && !/\s/.test(last) && last !== '-' && !/^[.,!?;:]/.test(ch);
+                el.textContent += (needsSpace ? ' ' : '') + ch;
+            }
         }
     });
 }
