@@ -42,7 +42,9 @@
       <div
         id="canvas"
         class="w-[30%] p-6 overflow-y-auto border-l bg-white"
-      ></div>
+      >
+        <h2 class="font-semibold text-lg" id="canvas-title">Canvas</h2>
+      </div>
     </main>
   </div>
 <script>
@@ -95,85 +97,39 @@ function appendToken(el, token) {
 }
 
 function renderDraft(draft) {
-    canvasDiv.innerHTML = '';
-    if (!draft) return;
-    if (diffTimer) clearTimeout(diffTimer);
-    canvasDiv.classList.add('draft');
+    if (!draft || Object.keys(draft).length === 0) {
+        canvasDiv.innerHTML = '<h2 class="font-semibold text-lg" id="canvas-title">Canvas</h2>';
+        return;
+    }
+    canvasDiv.classList.remove('draft');
+
     const bulletToString = (bullet) => {
         if (bullet == null) return '';
-
-        let str;
-        if (typeof bullet === 'string') {
-            str = bullet;
-        } else if (typeof bullet === 'object') {
-            if ('text' in bullet) str = bullet.text;
-            else if ('bullet' in bullet) str = bullet.bullet;
-            else str = JSON.stringify(bullet);
-        } else {
-            str = String(bullet);
+        if (typeof bullet === 'string') return bullet;
+        if (typeof bullet === 'object') {
+            if ('text' in bullet) return bullet.text;
+            if ('bullet' in bullet) return bullet.bullet;
+            return JSON.stringify(bullet);
         }
-
-        // strip common list markers like "-", "*", "•", or "1." from the start
-        return str.replace(/^\s*(?:[-*•]|\d+[.)])\s*/, '').trim();
+        return String(bullet);
     };
 
-    const diffText = (oldText, newText) => {
-        if (oldText == null || oldText === newText) return newText || '';
-        return `<s>${oldText}</s> <em>${newText}</em>`;
-    };
-
-    const title = document.createElement('h1');
-    title.innerHTML = previousDraft ? diffText(previousDraft.title, draft.title || 'Untitled') : (draft.title || 'Untitled');
-    canvasDiv.appendChild(title);
-
-    const subtitle = document.createElement('h2');
-    subtitle.innerHTML = previousDraft ? diffText(previousDraft.subtitle, draft.subtitle || '') : (draft.subtitle || '');
-    canvasDiv.appendChild(subtitle);
-
-    const oldSections = (previousDraft && previousDraft.sections) ? previousDraft.sections : [];
-    (draft.sections || []).forEach((sec, i) => {
-        const oldSec = oldSections[i] || {};
-        const sTitle = document.createElement('p');
-        sTitle.innerHTML = diffText(oldSec.section_title, sec.section_title);
-        canvasDiv.appendChild(sTitle);
-        const ul = document.createElement('ul');
-        const newBullets = sec.section_bullets || [];
-        const oldBullets = oldSec.section_bullets || [];
-        const maxLen = Math.max(newBullets.length, oldBullets.length);
-        for (let j = 0; j < maxLen; j++) {
-            const li = document.createElement('li');
-            const newB = newBullets[j] !== undefined ? bulletToString(newBullets[j]) : null;
-            const oldB = oldBullets[j] !== undefined ? bulletToString(oldBullets[j]) : null;
-            li.innerHTML = diffText(oldB, newB);
-            ul.appendChild(li);
-        }
-        canvasDiv.appendChild(ul);
+    let md = `# ${draft.title || ''}\n\n`;
+    md += `## ${draft.subtitle || ''}\n\n`;
+    (draft.sections || []).forEach((sec) => {
+        md += `${sec.section_title || ''}\n`;
+        (sec.section_bullets || []).forEach((b) => {
+            md += `- ${bulletToString(b)}\n`;
+        });
+        md += `\n`;
     });
 
-    if (oldSections.length > (draft.sections || []).length) {
-        for (let i = (draft.sections || []).length; i < oldSections.length; i++) {
-            const oldSec = oldSections[i];
-        const sTitle = document.createElement('p');
-        sTitle.innerHTML = `<s>${oldSec.section_title}</s>`;
-        canvasDiv.appendChild(sTitle);
-            const ul = document.createElement('ul');
-            (oldSec.section_bullets || []).forEach(b => {
-                const li = document.createElement('li');
-                li.innerHTML = `<s>${bulletToString(b)}</s>`;
-                ul.appendChild(li);
-            });
-            canvasDiv.appendChild(ul);
-        }
-    }
-
+    const pre = document.createElement('pre');
+    pre.className = 'whitespace-pre-wrap';
+    pre.textContent = md.trim();
+    canvasDiv.innerHTML = '';
+    canvasDiv.appendChild(pre);
     previousDraft = JSON.parse(JSON.stringify(draft));
-    diffTimer = setTimeout(() => {
-        canvasDiv.querySelectorAll('s, em').forEach(el => {
-            const text = document.createTextNode(el.textContent);
-            el.replaceWith(text);
-        });
-        canvasDiv.classList.remove('draft');
-    }, 5000);
 }
 
 startBtn.addEventListener('click', async () => {
@@ -181,7 +137,7 @@ startBtn.addEventListener('click', async () => {
     lastAgent = null;
     lastContent = null;
     currentRun = 0;
-    canvasDiv.innerHTML = '';
+    canvasDiv.innerHTML = '<h2 class="font-semibold text-lg" id="canvas-title">Canvas</h2>';
     const startResp = await fetch('/start', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
