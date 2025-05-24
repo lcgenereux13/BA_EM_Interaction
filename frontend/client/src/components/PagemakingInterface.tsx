@@ -33,11 +33,23 @@ export function PagemakingInterface() {
   
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<PageDraft[]>([]);
+  const [showDiffIndex, setShowDiffIndex] = useState<number | null>(null);
   const [currentIteration, setCurrentIteration] = useState(0);
   const [maxIterations, setMaxIterations] = useState(5);
   const [completionStatus, setCompletionStatus] = useState<'in-progress' | 'complete' | 'none'>('none');
   
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const prevDraftCount = useRef(0);
+
+  useEffect(() => {
+    if (drafts.length > prevDraftCount.current) {
+      setShowDiffIndex(drafts.length - 1);
+      const timer = setTimeout(() => setShowDiffIndex(null), 5000);
+      prevDraftCount.current = drafts.length;
+      return () => clearTimeout(timer);
+    }
+    prevDraftCount.current = drafts.length;
+  }, [drafts]);
   
   // Auto-scroll to bottom when new messages arrive or streaming content updates
   useEffect(() => {
@@ -410,6 +422,8 @@ export function PagemakingInterface() {
                   agentId={draft.agentId}
                   iteration={draft.iteration}
                   isActive={index === drafts.length - 1}
+                  prevSections={index > 0 ? drafts[index - 1].sections : undefined}
+                  showDiff={index === showDiffIndex}
                 />
               ))}
             </>
