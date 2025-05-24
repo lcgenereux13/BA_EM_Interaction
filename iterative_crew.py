@@ -19,8 +19,6 @@ ollama_llm = LLM(
     stream=True,
 )
 
-
-
 class SlideSection(BaseModel):
     section_title: str
     section_bullets: List[str]
