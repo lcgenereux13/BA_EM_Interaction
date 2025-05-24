@@ -124,13 +124,20 @@ function showDraftDiff(newDraft) {
     const oldMd = draftToMarkdown(previousDraft);
     const newMd = draftToMarkdown(newDraft);
     const diff = diffLines(oldMd, newMd);
-    const diffMd = diff.map((p) => {
-        if (p.type === 'same') return p.text;
-        if (p.type === 'add') return `<em>${p.text}</em>`;
-        if (p.type === 'remove') return `<s>${p.text}</s>`;
-    }).join('\n');
     const mdParser = window.markdownit();
-    const rendered = mdParser.render(diffMd);
+    const rendered = diff.map((p) => {
+        if (p.type === 'same') {
+            return mdParser.render(p.text);
+        }
+        if (p.type === 'add') {
+            const content = mdParser.render(p.text);
+            return `<div class="diff-added">${content}</div>`;
+        }
+        if (p.type === 'remove') {
+            const content = mdParser.render(p.text);
+            return `<div class="diff-removed">${content}</div>`;
+        }
+    }).join('');
     canvasDiv.innerHTML = `<div class="markdown-body draft">${rendered}</div>`;
     canvasDiv.classList.add('draft');
     if (diffTimer) clearTimeout(diffTimer);
