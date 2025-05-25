@@ -210,7 +210,7 @@ export function PagemakingInterface() {
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                   <i className="ri-file-text-line text-primary text-2xl"></i>
                 </div>
-                <h2 className="text-xl font-semibold mb-2">Pagemaking Crew</h2>
+                <h2 className="text-xl font-semibold mb-2">Pagemaker</h2>
                 <p className="text-muted-foreground max-w-md">
                   Paste your research text or attach a file below. Our Analyst and Manager agents will
                   work together to create a professionally structured page based on your research.

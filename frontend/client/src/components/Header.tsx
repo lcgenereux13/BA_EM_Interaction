@@ -30,7 +30,7 @@ export function Header() {
       <div className="flex justify-between items-center w-full">
         <div className="flex items-center gap-2">
           <i className="ri-file-text-line text-primary text-2xl"></i>
-          <h1 className="text-xl font-semibold">Pagemaking Crew</h1>
+          <h1 className="text-xl font-semibold">Pagemaker</h1>
         </div>
         
         <div className="flex items-center gap-2">
