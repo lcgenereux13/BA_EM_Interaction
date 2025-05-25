@@ -120,7 +120,9 @@ function draftToMarkdown(draft) {
                 : `* ${txt}`;
         };
         (sec.section_bullets || []).forEach((b) => {
-            md += `${addBulletPrefix(bulletToString(b))}\n`;
+            let text = bulletToString(b);
+            text = addBulletPrefix(text);
+            md += `${text}\n`;
         });
         md += `\n`;
     });
@@ -286,7 +288,9 @@ function renderDraft(draft) {
                 : `* ${txt}`;
         };
         (sec.section_bullets || []).forEach((b) => {
-            md += `${addBulletPrefix(bulletToString(b))}\n`;
+            let text = bulletToString(b);
+            text = addBulletPrefix(text);
+            md += `${text}\n`;
         });
         md += `\n`;
     });
