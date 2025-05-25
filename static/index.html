@@ -102,7 +102,11 @@ function draftToMarkdown(draft) {
     (draft.sections || []).forEach((sec) => {
         md += `${sec.section_title || ''}\n`;
         (sec.section_bullets || []).forEach((b) => {
-            md += `- ${bulletToString(b)}\n`;
+            let text = bulletToString(b);
+            if (!text.trim().startsWith('*')) {
+                text = `* ${text}`;
+            }
+            md += `${text}\n`;
         });
         md += `\n`;
     });
@@ -240,7 +244,11 @@ function renderDraft(draft) {
     (draft.sections || []).forEach((sec) => {
         md += `${sec.section_title || ''}\n`;
         (sec.section_bullets || []).forEach((b) => {
-            md += `- ${bulletToString(b)}\n`;
+            let text = bulletToString(b);
+            if (!text.trim().startsWith('*')) {
+                text = `* ${text}`;
+            }
+            md += `${text}\n`;
         });
         md += `\n`;
     });
