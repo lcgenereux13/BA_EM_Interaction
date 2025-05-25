@@ -422,6 +422,7 @@ class CopilotCrewAgent:
                     token_q.put((current_agent, event.chunk))
                     analyst_tokens.append(event.chunk)
                 elif current_agent == "manager":
+                    token_q.put((current_agent, event.chunk))
                     manager_tokens.append(event.chunk)
                 else:
                     token_q.put((current_agent or "crew", event.chunk))
