@@ -5,12 +5,15 @@ import ast
 import asyncio
 import threading
 import queue
+import os
 
 # crewai exposes the event bus directly from the events module
 from crewai.utilities.events import crewai_event_bus
 from crewai.utilities.events import LLMStreamChunkEvent, AgentExecutionStartedEvent
 
 from crewai import Crew, Agent, Task, LLM
+
+os.environ["OPENAI_API_KEY"] = "local_llm"
 
 # Use a local Ollama instance for all LLM interactions
 ollama_llm = LLM(
