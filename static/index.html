@@ -37,8 +37,11 @@
 </head>
   <body class="antialiased font-sans text-gray-800 bg-gray-50">
     <div class="flex flex-col h-screen">
-    <header class="bg-blue-600 text-white py-4 px-6">
+    <header class="bg-blue-600 text-white py-4 px-6 flex items-center justify-between">
       <h1 class="text-xl font-semibold">Pagemaker</h1>
+      <button id="scroll-toggle" class="text-sm bg-blue-500 hover:bg-blue-700 px-3 py-1 rounded">
+        Auto Scroll: ON
+      </button>
     </header>
     <main class="flex flex-1 overflow-hidden">
       <div
@@ -67,12 +70,19 @@ const chatDiv = document.getElementById('chat');
 const startBtn = document.getElementById('start');
 const promptInput = document.getElementById('prompt');
 const canvasDiv = document.getElementById('canvas');
+const scrollToggle = document.getElementById('scroll-toggle');
+let autoScroll = true;
 let lastAgent = null;
 let lastContent = null;
 let currentRun = 0;
 let previousDraft = null;
 let jsonIndent = 0;
 let diffTimer = null;
+
+scrollToggle.addEventListener('click', () => {
+    autoScroll = !autoScroll;
+    scrollToggle.textContent = 'Auto Scroll: ' + (autoScroll ? 'ON' : 'OFF');
+});
 
 function draftToMarkdown(draft) {
     if (!draft) return '';
@@ -298,9 +308,11 @@ startBtn.addEventListener('click', async () => {
         }
 
         appendToken(lastContent, data.token);
-        // Always keep the chat scrolled to the newest token so the
-        // latest streaming output is visible without manual scrolling.
-        chatDiv.scrollTop = chatDiv.scrollHeight;
+        // Scroll to the bottom when auto scroll is enabled so the latest
+        // streaming output is visible without manual scrolling.
+        if (autoScroll) {
+            chatDiv.scrollTop = chatDiv.scrollHeight;
+        }
     };
     evtSource.onerror = () => {
         evtSource.close();
