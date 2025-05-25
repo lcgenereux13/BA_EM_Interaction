@@ -39,17 +39,14 @@ export function PagemakingInterface() {
   const [completionStatus, setCompletionStatus] = useState<'in-progress' | 'complete' | 'none'>('none');
   
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
   
   // Auto-scroll to bottom when new messages arrive or streaming content updates
   useEffect(() => {
-    if (chatContainerRef.current) {
-      // Add a small delay to ensure content is fully rendered before scrolling
-      setTimeout(() => {
-        if (chatContainerRef.current) {
-          chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-        }
-      }, 50);
-    }
+    // Add a small delay to ensure content is rendered before scrolling
+    setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 50);
   }, [messages, streamingMessage]);
   
   // Simulate the iterative process when a task is submitted
@@ -320,6 +317,7 @@ export function PagemakingInterface() {
                     </div>
                   </div>
                 )}
+                <div ref={bottomRef} />
               </div>
             )}
           </div>
