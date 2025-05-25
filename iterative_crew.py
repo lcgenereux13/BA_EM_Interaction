@@ -331,10 +331,11 @@ class CopilotCrewAgent:
                     if current_agent == "analyst" and analyst_tokens:
                         try:
                             new_dict = self.crew._extract_json("".join(analyst_tokens))
-                            self.crew.draft = new_dict
-                            token_q.put(("draft", json.dumps(self.crew.draft)))
-                        except Exception:
-                            pass
+                        except Exception as e:
+                            print(f"Error parsing analyst draft: {e}")
+                            new_dict = {"raw": "".join(analyst_tokens)}
+                        self.crew.draft = new_dict
+                        token_q.put(("draft", json.dumps(self.crew.draft)))
                         analyst_tokens = []
                     current_agent = "manager"
 
