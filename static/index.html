@@ -103,11 +103,17 @@ function draftToMarkdown(draft) {
     md += `## ${draft.subtitle || ''}\n\n`;
     (draft.sections || []).forEach((sec) => {
         md += `${sec.section_title || ''}\n`;
+        // Ensure each bullet is rendered as a markdown list item. If the
+        // bullet text doesn't already start with '*' or '-', prepend one.
+        const addBulletPrefix = (txt) => {
+            const trimmed = txt.trim();
+            return (trimmed.startsWith('*') || trimmed.startsWith('-'))
+                ? txt
+                : `* ${txt}`;
+        };
         (sec.section_bullets || []).forEach((b) => {
             let text = bulletToString(b);
-            if (!text.trim().startsWith('*')) {
-                text = `* ${text}`;
-            }
+            text = addBulletPrefix(text);
             md += `${text}\n`;
         });
         md += `\n`;
@@ -265,11 +271,17 @@ function renderDraft(draft) {
     md += `### ${draft.subtitle || ''}\n\n`;
     (draft.sections || []).forEach((sec) => {
         md += `${sec.section_title || ''}\n`;
+        // Ensure each bullet is rendered as a markdown list item. If the
+        // bullet text doesn't already start with '*' or '-', prepend one.
+        const addBulletPrefix = (txt) => {
+            const trimmed = txt.trim();
+            return (trimmed.startsWith('*') || trimmed.startsWith('-'))
+                ? txt
+                : `* ${txt}`;
+        };
         (sec.section_bullets || []).forEach((b) => {
             let text = bulletToString(b);
-            if (!text.trim().startsWith('*')) {
-                text = `* ${text}`;
-            }
+            text = addBulletPrefix(text);
             md += `${text}\n`;
         });
         md += `\n`;
