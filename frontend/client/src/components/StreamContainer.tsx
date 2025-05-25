@@ -9,12 +9,11 @@ interface StreamContainerProps {
 
 export function StreamContainer({ messages, onClear }: StreamContainerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
   
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
-    if (containerRef.current) {
-      containerRef.current.scrollTop = containerRef.current.scrollHeight;
-    }
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
   
   // Check if a message is new (less than 5 seconds old)
@@ -83,6 +82,7 @@ export function StreamContainer({ messages, onClear }: StreamContainerProps) {
             return null;
           })
         )}
+        <div ref={bottomRef} />
       </div>
     </div>
   );

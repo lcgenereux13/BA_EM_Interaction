@@ -22,16 +22,12 @@ export function ChatInterface() {
   
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
   
   // Auto-scroll to bottom when new messages arrive or streaming content updates
   useEffect(() => {
-    const container = chatContainerRef.current;
-    if (container) {
-      const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 20;
-      if (isAtBottom) {
-        container.scrollTop = container.scrollHeight;
-      }
-    }
+    // Ensure the newest content is visible
+    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, streamingMessage]);
   
   // Handle document section click
@@ -118,6 +114,7 @@ export function ChatInterface() {
                 )}
               </>
             )}
+            <div ref={bottomRef} />
           </div>
         </div>
         

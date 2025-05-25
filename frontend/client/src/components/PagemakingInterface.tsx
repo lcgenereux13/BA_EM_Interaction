@@ -39,6 +39,7 @@ export function PagemakingInterface() {
   const [completionStatus, setCompletionStatus] = useState<'in-progress' | 'complete' | 'none'>('none');
   
   const chatContainerRef = useRef<HTMLDivElement>(null);
+  const bottomRef = useRef<HTMLDivElement>(null);
   const prevDraftCount = useRef(0);
 
   useEffect(() => {
@@ -53,16 +54,10 @@ export function PagemakingInterface() {
   
   // Auto-scroll to bottom when new messages arrive or streaming content updates
   useEffect(() => {
-    const container = chatContainerRef.current;
-    if (container) {
-      // Add a small delay to ensure content is fully rendered before scrolling
-      setTimeout(() => {
-        const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 20;
-        if (isAtBottom) {
-          container.scrollTop = container.scrollHeight;
-        }
-      }, 50);
-    }
+    // Add a small delay to ensure content is rendered before scrolling
+    setTimeout(() => {
+      bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 50);
   }, [messages, streamingMessage]);
   
   // Simulate the iterative process when a task is submitted
@@ -223,7 +218,7 @@ export function PagemakingInterface() {
                 <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
                   <i className="ri-file-text-line text-primary text-2xl"></i>
                 </div>
-                <h2 className="text-xl font-semibold mb-2">Pagemaking Crew</h2>
+                <h2 className="text-xl font-semibold mb-2">Pagemaker</h2>
                 <p className="text-muted-foreground max-w-md">
                   Paste your research text or attach a file below. Our Analyst and Manager agents will
                   work together to create a professionally structured page based on your research.
@@ -333,6 +328,7 @@ export function PagemakingInterface() {
                     </div>
                   </div>
                 )}
+                <div ref={bottomRef} />
               </div>
             )}
           </div>
