@@ -319,22 +319,27 @@ startBtn.addEventListener('click', async () => {
         }
         if (lastAgent !== data.agent) {
             lastAgent = data.agent;
-            const msgDiv = document.createElement('div');
-            msgDiv.className = 'chat-message flex items-start space-x-2';
-            if (data.agent === 'manager') msgDiv.classList.add('flex-row-reverse');
-            const avatar = document.createElement('div');
-            avatar.className = 'avatar w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold';
-            avatar.style.background = data.agent === 'analyst' ? '#007bff' : '#6b21a8';
-            // Use descriptive initials for each agent
-            avatar.textContent = data.agent === 'analyst' ? 'BA'
-                : data.agent === 'manager' ? 'EM'
-                : 'C';
-            msgDiv.appendChild(avatar);
-            const content = document.createElement('div');
-            content.className = 'message-content whitespace-pre-wrap font-sans text-base leading-relaxed bg-gray-100 rounded px-3 py-2 max-w-[60%]';
-            msgDiv.appendChild(content);
-            chatDiv.appendChild(msgDiv);
-            lastContent = content;
+            if (data.agent === 'crew') {
+                const notice = document.createElement('div');
+                notice.className = 'w-full bg-gray-200 text-gray-800 font-bold rounded px-3 py-2 mb-2 text-center';
+                chatDiv.appendChild(notice);
+                lastContent = notice;
+            } else {
+                const msgDiv = document.createElement('div');
+                msgDiv.className = 'chat-message flex items-start space-x-2';
+                if (data.agent === 'manager') msgDiv.classList.add('flex-row-reverse');
+                const avatar = document.createElement('div');
+                avatar.className = 'avatar w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold';
+                avatar.style.background = data.agent === 'analyst' ? '#007bff' : '#6b21a8';
+                // Use descriptive initials for each agent
+                avatar.textContent = data.agent === 'analyst' ? 'BA' : 'EM';
+                msgDiv.appendChild(avatar);
+                const content = document.createElement('div');
+                content.className = 'message-content whitespace-pre-wrap font-sans text-base leading-relaxed bg-gray-100 rounded px-3 py-2 max-w-[60%]';
+                msgDiv.appendChild(content);
+                chatDiv.appendChild(msgDiv);
+                lastContent = content;
+            }
         }
 
         appendToken(lastContent, data.token);

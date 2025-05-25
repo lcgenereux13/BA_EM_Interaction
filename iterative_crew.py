@@ -389,10 +389,21 @@ class CopilotCrewAgent:
             if rating >= self.threshold:
                 break
 
+            # Prepare for the next iteration by updating feedback
             self.crew.feedback = "\n".join(
                 f"{self.crew._resolve_element_text(c['element'])}: {c['comment']}"
                 for c in review_dict.get("comments", [])
             )
+
+            # Inform the frontend that a new iteration will begin if
+            # the threshold hasn't been met and the max iterations allow it
+            if i < self.max_iters:
+                message = (
+                    f"New iteration: number {i + 1}.\n"
+                    "The current draft has not met the EM's requirements "
+                    "and maximum iterations have not been reached"
+                )
+                yield "crew", message, i + 1
 
 
 
