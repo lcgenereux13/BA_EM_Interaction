@@ -98,7 +98,7 @@ create_page = Task(
         "3. Organize into 3–5 MECE sections, each with a short section title and 3–7 concise bullets.\n"
         "4. Make every item standalone, action-oriented, and data-driven.\n"
         "5. Return a JSON object:\n"
-        "{\n"
+        "{"
         "  'title': str,"
         "  'subtitle': str,"
         "  'sections': ["
@@ -185,7 +185,7 @@ review_slide = Task(
     expected_output=(
         'A JSON with:'
         '{'
-        '  "rating": int (1-5),'
+        '  "rating": int (1-5) where 4 is passing and 5 is exceptional,'
         '  "comments": ['
         '    { "element": str, "comment": str },'
         '    ...'
