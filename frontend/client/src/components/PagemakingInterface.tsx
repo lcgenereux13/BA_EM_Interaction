@@ -54,7 +54,6 @@ export function PagemakingInterface() {
   
   // Auto-scroll to bottom when new messages arrive or streaming content updates
   useEffect(() => {
-    // Add a small delay to ensure content is rendered before scrolling
     setTimeout(() => {
       bottomRef.current?.scrollIntoView({ behavior: "smooth" });
     }, 50);
@@ -327,12 +326,12 @@ export function PagemakingInterface() {
                       {streamingMessage}
                     </div>
                   </div>
-                )}
-                <div ref={bottomRef} />
-              </div>
-            )}
+                  )}
+                </div>
+              )}
+              <div ref={bottomRef} />
+            </div>
           </div>
-        </div>
         
         {/* Input Area */}
         <div className="border-t border-border p-4 sticky bottom-0 bg-background">
