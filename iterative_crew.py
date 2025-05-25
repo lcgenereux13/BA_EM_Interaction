@@ -399,7 +399,7 @@ class CopilotCrewAgent:
             # the threshold hasn't been met and the max iterations allow it
             if i < self.max_iters:
                 message = (
-                    f"New iteration, iteration number {i + 1}. "
+                    f"New iteration: number {i + 1}.\n"
                     "The current draft has not met the EM's requirements "
                     "and maximum iterations have not been reached"
                 )

@@ -331,16 +331,11 @@ startBtn.addEventListener('click', async () => {
         }
         if (lastAgent !== data.agent) {
             lastAgent = data.agent;
-
-            // Special styling for iteration notifications from the crew
             if (data.agent === 'crew') {
-                const msgDiv = document.createElement('div');
-                msgDiv.className = 'my-2 flex justify-center w-full';
-                const content = document.createElement('div');
-                content.className = 'w-full bg-gray-200 text-gray-700 font-bold rounded px-3 py-2 text-center';
-                msgDiv.appendChild(content);
-                chatDiv.appendChild(msgDiv);
-                lastContent = content;
+                const notice = document.createElement('div');
+                notice.className = 'w-full bg-gray-200 text-gray-800 font-bold rounded px-3 py-2 mb-2 text-center';
+                chatDiv.appendChild(notice);
+                lastContent = notice;
             } else {
                 const msgDiv = document.createElement('div');
                 msgDiv.className = 'chat-message flex items-start space-x-2';
@@ -349,9 +344,7 @@ startBtn.addEventListener('click', async () => {
                 avatar.className = 'avatar w-8 h-8 rounded-full flex items-center justify-center text-white text-sm font-bold';
                 avatar.style.background = data.agent === 'analyst' ? '#007bff' : '#6b21a8';
                 // Use descriptive initials for each agent
-                avatar.textContent = data.agent === 'analyst' ? 'BA'
-                    : data.agent === 'manager' ? 'EM'
-                    : 'C';
+                avatar.textContent = data.agent === 'analyst' ? 'BA' : 'EM';
                 msgDiv.appendChild(avatar);
                 const content = document.createElement('div');
                 content.className = 'message-content whitespace-pre-wrap font-sans text-base leading-relaxed bg-gray-100 rounded px-3 py-2 max-w-[60%]';
