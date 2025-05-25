@@ -27,10 +27,8 @@ export function ChatInterface() {
   useEffect(() => {
     const container = chatContainerRef.current;
     if (container) {
-      const isAtBottom = container.scrollHeight - container.scrollTop <= container.clientHeight + 20;
-      if (isAtBottom) {
-        container.scrollTop = container.scrollHeight;
-      }
+      // Always scroll to bottom to show the latest streamed tokens
+      container.scrollTop = container.scrollHeight;
     }
   }, [messages, streamingMessage]);
   
