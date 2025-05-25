@@ -170,6 +170,14 @@ class IterativeCrew(Crew):
         except Exception:
             return element
 
+    def _replace_comment_elements(self, review: dict) -> dict:
+        """Replace element paths in review comments with the actual text."""
+        for comment in review.get("comments", []):
+            elem = comment.get("element")
+            if elem:
+                comment["element"] = self._resolve_element_text(elem)
+        return review
+
     def _extract_json(self, blob: str) -> dict:
         """
         Parse a JSON or JSON-like string produced by the LLM.
@@ -282,6 +290,7 @@ class IterativeCrew(Crew):
 
             # 2) parse the manager review
             review_dict = self._extract_json(review_out.raw)
+            review_dict = self._replace_comment_elements(review_dict)
             rating = review_dict.get("rating", 0)
             print(f"Manager rated: {rating}/5")
 
@@ -321,9 +330,10 @@ class CopilotCrewAgent:
             token_q: "queue.Queue[Tuple[str, str]]" = queue.Queue()
             current_agent = ""
             analyst_tokens: list[str] = []
+            manager_tokens: list[str] = []
 
             def on_agent_started(source, event: AgentExecutionStartedEvent) -> None:
-                nonlocal current_agent, analyst_tokens
+                nonlocal current_agent, analyst_tokens, manager_tokens
                 role = event.agent.role
                 if role == analyst.role:
                     current_agent = "analyst"
@@ -337,12 +347,17 @@ class CopilotCrewAgent:
                         self.crew.draft = new_dict
                         token_q.put(("draft", json.dumps(self.crew.draft)))
                         analyst_tokens = []
+                    manager_tokens = []
                     current_agent = "manager"
 
             def on_chunk(source, event: LLMStreamChunkEvent) -> None:
-                token_q.put((current_agent or "crew", event.chunk))
                 if current_agent == "analyst":
+                    token_q.put((current_agent, event.chunk))
                     analyst_tokens.append(event.chunk)
+                elif current_agent == "manager":
+                    manager_tokens.append(event.chunk)
+                else:
+                    token_q.put((current_agent or "crew", event.chunk))
 
             with crewai_event_bus.scoped_handlers():
                 crewai_event_bus.register_handler(AgentExecutionStartedEvent, on_agent_started)
@@ -380,6 +395,12 @@ class CopilotCrewAgent:
                 new_dict = self.crew._extract_json(slide_out.raw)
 
             review_dict = self.crew._extract_json(review_out.raw)
+            review_dict = self.crew._replace_comment_elements(review_dict)
+
+            cleaned = json.dumps(review_dict)
+            for ch in cleaned:
+                yield "manager", ch, i
+
             rating = review_dict.get("rating", 0)
 
             # update the current draft after each pass in case parsing during
