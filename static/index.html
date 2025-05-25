@@ -77,6 +77,8 @@ let lastContent = null;
 let currentRun = 0;
 let previousDraft = null;
 let jsonIndent = 0;
+let inString = false;
+let escapeNext = false;
 let diffTimer = null;
 
 scrollToggle.addEventListener('click', () => {
@@ -164,59 +166,79 @@ function showDraftDiff(newDraft) {
 }
 
 function appendToken(el, token) {
-    // Split the incoming token by newlines so streamed JSON that lacks
-    // line breaks will still be formatted nicely without creating blank lines.
-    const lines = token.split(/\n/);
-    lines.forEach((line, idx) => {
-        if (idx > 0) {
-            // Always move to a new line for each newline character, but
-            // avoid inserting an extra blank line when multiple newlines are
-            // represented by empty segments.
+    const addText = (text) => {
+        const last = el.lastChild && el.lastChild.textContent;
+        if (!last || last.endsWith('\n')) {
+            el.appendChild(document.createTextNode(' '.repeat(jsonIndent * 2) + text));
+        } else {
+            el.appendChild(document.createTextNode(text));
+        }
+    };
+
+    for (let i = 0; i < token.length; i++) {
+        const ch = token[i];
+
+        if (escapeNext) {
+            addText(ch);
+            escapeNext = false;
+            continue;
+        }
+
+        if (ch === '\\' && inString) {
+            addText(ch);
+            escapeNext = true;
+            continue;
+        }
+
+        if (ch === '"') {
+            inString = !inString;
+            addText(ch);
+            continue;
+        }
+
+        if (ch === '\n') {
+            if (inString) {
+                addText(' ');
+            } else {
+                el.appendChild(document.createElement('br'));
+                if (jsonIndent > 0) {
+                    el.appendChild(document.createTextNode(' '.repeat(jsonIndent * 2)));
+                }
+            }
+            continue;
+        }
+
+        if (!inString && (ch === '{' || ch === '[')) {
+            addText(ch);
+            jsonIndent++;
+            el.appendChild(document.createElement('br'));
+            el.appendChild(document.createTextNode(' '.repeat(jsonIndent * 2)));
+            continue;
+        }
+
+        if (!inString && (ch === '}' || ch === ']')) {
+            jsonIndent = Math.max(0, jsonIndent - 1);
+            el.appendChild(document.createElement('br'));
+            el.appendChild(document.createTextNode(' '.repeat(jsonIndent * 2)));
+            addText(ch);
             el.appendChild(document.createElement('br'));
             if (jsonIndent > 0) {
                 el.appendChild(document.createTextNode(' '.repeat(jsonIndent * 2)));
             }
+            continue;
         }
 
-        if (line === '') {
-            return;
-        }
-
-        // Further split by JSON punctuation so each key/value pair can be
-        // rendered on its own line as it streams in.
-        const parts = line.split(/([{}\[\],])/g).filter(Boolean);
-        parts.forEach((part) => {
-            if (part === '{' || part === '[') {
-                el.appendChild(document.createTextNode(part));
-                jsonIndent++;
-                el.appendChild(document.createElement('br'));
+        if (!inString && ch === ',' && jsonIndent > 0) {
+            addText(ch);
+            el.appendChild(document.createElement('br'));
+            if (jsonIndent > 0) {
                 el.appendChild(document.createTextNode(' '.repeat(jsonIndent * 2)));
-            } else if (part === '}' || part === ']') {
-                jsonIndent = Math.max(0, jsonIndent - 1);
-                el.appendChild(document.createElement('br'));
-                el.appendChild(document.createTextNode(' '.repeat(jsonIndent * 2)));
-                el.appendChild(document.createTextNode(part));
-                el.appendChild(document.createElement('br'));
-                if (jsonIndent > 0) {
-                    el.appendChild(document.createTextNode(' '.repeat(jsonIndent * 2)));
-                }
-            } else if (part === ',' && jsonIndent > 0) {
-                el.appendChild(document.createTextNode(part));
-                el.appendChild(document.createElement('br'));
-                if (jsonIndent > 0) {
-                    el.appendChild(document.createTextNode(' '.repeat(jsonIndent * 2)));
-                }
-            } else {
-                // If the previous node ended with a newline, indent first
-                const last = el.lastChild && el.lastChild.textContent;
-                if (!last || last.endsWith('\n')) {
-                    el.appendChild(document.createTextNode(' '.repeat(jsonIndent * 2) + part));
-                } else {
-                    el.appendChild(document.createTextNode(part));
-                }
             }
-        });
-    });
+            continue;
+        }
+
+        addText(ch);
+    }
 }
 
 function renderDraft(draft) {
