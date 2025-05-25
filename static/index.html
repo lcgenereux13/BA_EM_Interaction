@@ -81,6 +81,14 @@ let inString = false;
 let escapeNext = false;
 let diffTimer = null;
 
+function addBulletPrefix(text) {
+    const trimmed = text.trim();
+    if (trimmed.startsWith('*') || trimmed.startsWith('-')) {
+        return text;
+    }
+    return `* ${text}`;
+}
+
 scrollToggle.addEventListener('click', () => {
     autoScroll = !autoScroll;
     scrollToggle.textContent = 'Auto Scroll: ' + (autoScroll ? 'ON' : 'OFF');
@@ -105,9 +113,7 @@ function draftToMarkdown(draft) {
         md += `${sec.section_title || ''}\n`;
         (sec.section_bullets || []).forEach((b) => {
             let text = bulletToString(b);
-            if (!text.trim().startsWith('*')) {
-                text = `* ${text}`;
-            }
+            text = addBulletPrefix(text);
             md += `${text}\n`;
         });
         md += `\n`;
@@ -267,9 +273,7 @@ function renderDraft(draft) {
         md += `${sec.section_title || ''}\n`;
         (sec.section_bullets || []).forEach((b) => {
             let text = bulletToString(b);
-            if (!text.trim().startsWith('*')) {
-                text = `* ${text}`;
-            }
+            text = addBulletPrefix(text);
             md += `${text}\n`;
         });
         md += `\n`;
