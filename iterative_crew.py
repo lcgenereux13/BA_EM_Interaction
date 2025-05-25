@@ -343,9 +343,11 @@ class CopilotCrewAgent:
                             new_dict = self.crew._extract_json("".join(analyst_tokens))
                         except Exception as e:
                             print(f"Error parsing analyst draft: {e}")
-                            new_dict = {"raw": "".join(analyst_tokens)}
-                        self.crew.draft = new_dict
-                        token_q.put(("draft", json.dumps(self.crew.draft)))
+                            # keep the last valid draft and display it
+                            token_q.put(("draft", json.dumps(self.crew.draft)))
+                        else:
+                            self.crew.draft = new_dict
+                            token_q.put(("draft", json.dumps(self.crew.draft)))
                         analyst_tokens = []
                     manager_tokens = []
                     current_agent = "manager"
@@ -389,13 +391,21 @@ class CopilotCrewAgent:
             out = result_container["out"]
             slide_out, review_out = out.tasks_output
 
-            if getattr(slide_out, "pydantic", None):
-                new_dict = slide_out.pydantic.model_dump()
-            else:
-                new_dict = self.crew._extract_json(slide_out.raw)
+            try:
+                if getattr(slide_out, "pydantic", None):
+                    new_dict = slide_out.pydantic.model_dump()
+                else:
+                    new_dict = self.crew._extract_json(slide_out.raw)
+            except Exception as e:
+                print(f"Error parsing final analyst output: {e}")
+                new_dict = self.crew.draft
 
-            review_dict = self.crew._extract_json(review_out.raw)
-            review_dict = self.crew._replace_comment_elements(review_dict)
+            try:
+                review_dict = self.crew._extract_json(review_out.raw)
+                review_dict = self.crew._replace_comment_elements(review_dict)
+            except Exception as e:
+                print(f"Error parsing manager review: {e}")
+                review_dict = {"rating": 0, "comments": [], "summary": ""}
 
             cleaned = json.dumps(review_dict)
             for ch in cleaned:
