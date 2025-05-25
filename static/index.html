@@ -298,10 +298,9 @@ startBtn.addEventListener('click', async () => {
         }
 
         appendToken(lastContent, data.token);
-        const isAtBottom = chatDiv.scrollHeight - chatDiv.scrollTop <= chatDiv.clientHeight + 20;
-        if (isAtBottom) {
-            chatDiv.scrollTop = chatDiv.scrollHeight;
-        }
+        // Always keep the chat scrolled to the newest token so the
+        // latest streaming output is visible without manual scrolling.
+        chatDiv.scrollTop = chatDiv.scrollHeight;
     };
     evtSource.onerror = () => {
         evtSource.close();
