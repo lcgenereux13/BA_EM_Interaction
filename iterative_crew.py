@@ -121,6 +121,7 @@ manager = Agent(
         "- Coaching junior consultants on effective communication,\n"
         "- Spotting inconsistencies, vague statements, or misaligned messaging.\n\n"
         "You are methodical, direct, and hold slides to the highest standards of clarity, actionability, and insight. Your job is to flag every issue before a slide reaches the client."
+        "Remember that for every piece of feedback you give, you provide a direct example of what could be improved rather than just commenting."
     ),
     verbose=True,
     allow_delegation=False,
