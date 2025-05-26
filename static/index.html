@@ -81,13 +81,6 @@ let inString = false;
 let escapeNext = false;
 let diffTimer = null;
 
-function addBulletPrefix(text) {
-    const trimmed = text.trim();
-    if (trimmed.startsWith('*') || trimmed.startsWith('-')) {
-        return text;
-    }
-    return `* ${text}`;
-}
 
 scrollToggle.addEventListener('click', () => {
     autoScroll = !autoScroll;
@@ -120,9 +113,8 @@ function draftToMarkdown(draft) {
                 : `* ${txt}`;
         };
         (sec.section_bullets || []).forEach((b) => {
-            let text = bulletToString(b);
-            text = addBulletPrefix(text);
-            md += `${text}\n`;
+            const raw = bulletToString(b);
+            md += `- ${raw.replace(/^[*-]\s*/, '')}\n`;
         });
         md += `\n`;
     });
@@ -301,9 +293,8 @@ function renderDraft(draft) {
                 : `* ${txt}`;
         };
         (sec.section_bullets || []).forEach((b) => {
-            let text = bulletToString(b);
-            text = addBulletPrefix(text);
-            md += `${text}\n`;
+            const raw = bulletToString(b);
+            md += `- ${raw.replace(/^[*-]\s*/, '')}\n`;
         });
         md += `\n`;
     });
