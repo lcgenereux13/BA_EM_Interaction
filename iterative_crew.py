@@ -38,6 +38,7 @@ class SlideReview(BaseModel):
     summary: str
 
 
+# Analyst agent
 analyst = Agent(
     role="McKinsey Business Analyst",
     goal="Develop a compelling slide based on unstructured research for: {research}.",
@@ -56,35 +57,59 @@ analyst = Agent(
     llm=ollama_llm
 )
 
+# Task: create slide structure
 create_page = Task(
     name="Synthesize unstructured research into PowerPoint slide structure",
     description=(
-        "Use provided data to produce the structure of a PowerPoint slide in response to the prompt: {research}.\n"
-        "You must consider any existing drafts or feedback:\n draft:{current_plan}\n feedback: {feedback}.\n\n"
+        "Use provided research to produce the structure of a PowerPoint slide in response to the prompt: {research}.\n"
+        "You must consider any existing drafts or feedback:\n"
+        "  draft: {current_plan}\n"
+        "  feedback: {feedback}\n\n"
+        "Follow these guidelines to transform research into action-oriented slides:\n\n"
+        "1. **Understand What Constitutes an Insight**\n"
+        "- Capture a deep understanding: explain *why* something happens, not just *what*.\n"
+        "- Ask “why” repeatedly to uncover meaning that surprises or challenges conventional wisdom.\n"
+        "- Benchmark insights against familiar standards to aid comprehension.\n\n"
+        "2. **Write an Effective Header (Title & Subtitle)**\n"
+        "- Convey one key insight in active voice, summarizing the slide in 1–2 lines.\n"
+        "- Place the most important information at the start.\n"
+        "- Avoid filler phrases like “Based on our analysis.”\n\n"
+        "3. **Craft Impactful Bullets**\n"
+        "- Don’t repeat the header; each bullet must convey a single fact or finding.\n"
+        "- Use active voice and **bold** the first few words of each bullet.\n"
+        "- Limit bullets to ≤3 lines; include 3–8 bullets (use sub-bullets if >5 items).\n"
+        "- Ensure at least two items per list.\n\n"
+        "4. **Apply MECE Principle**\n"
+        "- Make bullets mutually exclusive and collectively exhaustive.\n\n"
+        "5. **Eliminate Empty Verbiage**\n"
+        "- Quantify adjectives (e.g., “20% increase” vs. “significant increase”).\n"
+        "- Front-load key information (e.g., “Sales grew 20% in the US”).\n"
+        "- Use bold sparingly for emphasis.\n\n"
+        "6. **Review and Refine**\n"
+        "- Ensure grammatical consistency and correct punctuation.\n"
+        "- Verify bullets do not exceed two lines each.\n"
+        "- Confirm there’s no redundancy between header and bullets.\n\n"
         "Steps:\n"
-        "1. Read the provided research to gather relevant facts, perspectives, and data.\n"
-        "2. Derive a central message or insight based on the research (this becomes the slide title).\n"
-        "3. Identify a supporting subtitle that frames the slide’s context or significance.\n"
-        "4. Organize insights into 3–5 MECE sections. Each section should have a clear, short section title and 3-7 concise sub-bullets.\n"
-        "5. Prioritize data-driven insights and use specific examples, metrics, or named entities where appropriate.\n"
-        "6. Review the structure for logical flow, clarity, and standalone readability.\n"
-        "7. Modify the wording of all items such that they are action oriented and can be understand and read as standalone items.\n"
-        "8. Return a JSON object in the format:\n"
-        "{{"
+        "1. Read the research to gather facts, perspectives, and data.\n"
+        "2. Derive a central, action-oriented insight (slide title) and supporting subtitle.\n"
+        "3. Organize into 3–5 MECE sections, each with a short section title and 3–7 concise bullets.\n"
+        "4. Make every item standalone, action-oriented, and data-driven.\n"
+        "5. Return a JSON object:\n"
+        "{"
         "  'title': str,"
         "  'subtitle': str,"
         "  'sections': ["
-        "    {{ 'section_title': str, 'section_bullets': [str, str, ...] }},"
+        "    { 'section_title': str, 'section_bullets': [str, ...] },"
         "    ..."
         "  ]"
-        "}}"
+        "}"
     ),
     expected_output='A JSON with slide "title", "subtitle", and a list of sections containing "section_title" and "section_bullets".',
-    # Parsing through instructor often fails with local models. We'll parse the JSON ourselves.
     output_pydantic=SlideStructure,
     agent=analyst
 )
 
+# Engagement Manager agent
 manager = Agent(
     role="Engagement Manager",
     goal="Review a draft slide for structure, clarity, insightfulness, and client-readiness.",
@@ -102,32 +127,68 @@ manager = Agent(
     llm=ollama_llm
 )
 
+# Task: review slide
 review_slide = Task(
     name="Review and critique a slide for quality and clarity",
     description=(
-        "Review the provided slide (in JSON format) against 10 dimensions of slide effectiveness: \n\n"
-        "1. **Action Title** – Is the title clear, action-oriented, and standalone?\n"
-        "2. **Pyramid Principle** – Is the conclusion upfront, followed by reasons and supporting data?\n"
-        "3. **Key Messages** – Are they prioritized, clear, concise, and aligned with the title? Are there minimum 3 bullets per section?\n"
-        "4. **Supporting Text** – Is it relevant, simple, quantified, and non-redundant?\n"
-        "5. **Logical Flow** – Does the structure guide the reader from insight to recommendation?\n"
-        "6. **Language and Tone** – Is the language formal, active, precise, and free from ambiguity?\n"
-        "7. **Data and Insights** – Are insights derived from data and not just restated facts?\n"
-        "8. **Consistency** – Are terms, units, acronyms, and formats used consistently?\n"
-        "9. **Call to Action (if applicable)** – Is there a clear, specific recommendation?\n"
-        "10. **Proofreading** – Are grammar, punctuation, and sentence flow error-free?\n\n"
-        "Return your feedback as a JSON object containing an overall rating (1-5), a list of specific improvement comments (each tagged with a slide element), and a final summary recommendation."
+        "Review the provided slide (in JSON format) against 10 dimensions of slide effectiveness:\n\n"
+        "1. **Action Title**\n"
+        "   - Clear and Insightful: Does the title succinctly convey the slide’s main takeaway?\n"
+        "   - Action‐Oriented: Is it phrased as an insight or recommendation (e.g., “Emerging Markets Drive 15% Revenue Growth”)?\n"
+        "   - Standalone Meaning: Can it convey the key message without additional context?\n\n"
+        "2. **Pyramid Principle**\n"
+        "   - Answer First: Is the main conclusion or recommendation up front?\n"
+        "   - Supporting Arguments: Are the key reasons immediately after (e.g., 1. High demand; 2. Regulatory tailwinds; 3. Competitive edge)?\n"
+        "   - Supporting Data: Is detailed evidence provided to substantiate each argument?\n\n"
+        "3. **Key Messages**\n"
+        "   - Prioritization: Are the most critical points highlighted or placed at the top?\n"
+        "   - Brevity: Are messages concise and jargon‐free?\n"
+        "   - Clarity: Are they understandable by someone unfamiliar with the topic?\n"
+        "   - Alignment: Do they directly support the action title?\n\n"
+        "4. **Supporting Text**\n"
+        "   - Relevance: Is every bullet directly tied to its key message?\n"
+        "   - Simplicity: Is the language free of unnecessary complexity?\n"
+        "   - Quantification: Are claims backed by numbers where appropriate?\n"
+        "   - No Redundancy: Is any repeated wording eliminated?\n\n"
+        "5. **Logical Flow**\n"
+        "   - Structure: Does it follow problem → analysis → insight → recommendation?\n"
+        "   - Transitions: Are ideas connected smoothly without abrupt jumps?\n"
+        "   - Hierarchy: Is information ordered from most to least important?\n\n"
+        "6. **Language and Tone**\n"
+        "   - Professional Tone: Is it formal and appropriate for a client?\n"
+        "   - Active Voice: Are sentences direct (e.g., “We recommend reducing costs by 10%”)?\n"
+        "   - Strong Verbs: Are verbs like “drive,” “enable,” “achieve” used?\n"
+        "   - No Ambiguity: Are vague terms replaced with specifics?\n\n"
+        "7. **Data and Insights**\n"
+        "   - Interpretation: Does the text explain the “so what” of each data point?\n"
+        "   - Insightful Commentary: Are insights drawn rather than just facts stated?\n"
+        "   - Focus: Are only the most critical data points included?\n\n"
+        "8. **Consistency**\n"
+        "   - Terminology: Are terms, units, and formats consistent?\n"
+        "   - Numbers: Are percentages, currency, and decimals uniformly formatted?\n"
+        "   - Acronyms: Are they spelled out on first use and then used consistently?\n\n"
+        "9. **Call to Action (if applicable)**\n"
+        "   - Clarity: Is there a clear next step or recommendation?\n"
+        "   - Actionable: Are recommendations specific (e.g., “Launch a pilot in Q3”)?\n\n"
+        "10. **Proofreading**\n"
+        "   - Grammar & Spelling: Any typos or awkward phrasing?\n"
+        "   - Punctuation: Is punctuation consistent and correct?\n"
+        "   - Readability: Does it flow smoothly when read aloud?\n\n"
+        "Return your feedback as a JSON object containing:\n"
+        "- `rating` (1-5),\n"
+        "- `comments`: a list of `{ element: string, comment: string }`,\n"
+        "- `summary`: a final recommendation."
     ),
     expected_output=(
         'A JSON with:'
-        '{{'
-        '  "rating": int (1-5),'
+        '{'
+        '  "rating": int (1-5) where 4 is passing and 5 is exceptional,'
         '  "comments": ['
-        '    {{ "element": str, "comment": str }},'
+        '    { "element": str, "comment": str },'
         '    ...'
         '  ],'
         '  "summary": str'
-        '}}'
+        '}'
     ),
     output_pydantic=SlideReview,
     agent=manager,
