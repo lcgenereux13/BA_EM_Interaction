@@ -217,3 +217,13 @@ code,
   display: block;
   padding: 2px 4px;
 }
+
+/* Markdown list styling */
+.markdown-body ul {
+  list-style-type: disc;
+  margin-left: 1.5em;
+}
+
+.markdown-body li {
+  margin: .25em 0;
+}
