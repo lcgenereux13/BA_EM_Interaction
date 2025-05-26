@@ -13,14 +13,14 @@ from crewai.utilities.events import LLMStreamChunkEvent, AgentExecutionStartedEv
 
 from crewai import Crew, Agent, Task, LLM
 
-os.environ["OPENAI_API_KEY"] = "local_llm"
+# os.environ["OPENAI_API_KEY"] = "local_llm"
 
 # Use a local Ollama instance for all LLM interactions
 ollama_llm = LLM(
     model="ollama/qwen2.5:3b_lcg",
     base_url="http://localhost:11434",
     stream=True,
-    api_key="local_llm",
+    #api_key="local_llm",
 
 )
 
