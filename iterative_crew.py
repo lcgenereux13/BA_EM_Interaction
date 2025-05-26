@@ -104,7 +104,7 @@ create_page = Task(
         "  ]"
         "}"
     ),
-    expected_output='A JSON with slide "title", "subtitle", and a list of sections containing "section_title" and "section_bullets" where section_bullets all start with a bullet "* ".',
+    expected_output='A JSON with slide "title", "subtitle", and a list of sections containing "section_title" and "section_bullets" where section_bullets are strings without "*" or "-".',
     output_pydantic=SlideStructure,
     agent=analyst
 )
