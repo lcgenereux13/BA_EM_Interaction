@@ -157,19 +157,32 @@ function showDraftDiff(newDraft) {
     const newMd = draftToMarkdown(newDraft);
     const diff = diffLines(oldMd, newMd);
     const mdParser = window.markdownit();
-    const rendered = diff.map((p) => {
-        if (p.type === 'same') {
-            return mdParser.render(p.text);
+
+    // Group consecutive diff lines of the same type so we only render
+    // each block once. This preserves markdown structures like lists
+    // when rendering with markdown-it.
+    const blocks = [];
+    diff.forEach((part) => {
+        const last = blocks[blocks.length - 1];
+        if (!last || last.type !== part.type) {
+            blocks.push({ type: part.type, lines: [part.text] });
+        } else {
+            last.lines.push(part.text);
         }
-        if (p.type === 'add') {
-            const content = mdParser.render(p.text);
-            return `<div class="diff-added">${content}</div>`;
-        }
-        if (p.type === 'remove') {
-            const content = mdParser.render(p.text);
-            return `<div class="diff-removed">${content}</div>`;
-        }
-    }).join('');
+    });
+
+    const rendered = blocks
+        .map((blk) => {
+            const html = mdParser.render(blk.lines.join('\n'));
+            if (blk.type === 'add') {
+                return `<div class="diff-added">${html}</div>`;
+            }
+            if (blk.type === 'remove') {
+                return `<div class="diff-removed">${html}</div>`;
+            }
+            return html;
+        })
+        .join('');
     canvasDiv.innerHTML = `<div class="markdown-body draft">${rendered}</div>`;
     canvasDiv.classList.add('draft');
     if (diffTimer) clearTimeout(diffTimer);
