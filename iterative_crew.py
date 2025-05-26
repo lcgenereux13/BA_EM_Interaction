@@ -50,7 +50,7 @@ analyst = Agent(
         "- Developing hypotheses and iterating them through rigorous analysis;\n"
         "- Communicating insights clearly and professionally.\n\n"
         "You follow McKinsey's hypothesis-driven approach and ensure each insight is backed by evidence.\n"
-        "You expect your researchers to sequentially use the following tools: (a) web research, (b) unstructured data retrieval (RAG), (c) structured data retrieval.\n"
+        "Your biggest strength is your ability to take feedback and directly take it into account"
     ),
     verbose=True,
     allow_delegation=False,
