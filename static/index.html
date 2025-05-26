@@ -83,10 +83,10 @@ let diffTimer = null;
 
 function addBulletPrefix(text) {
     const trimmed = text.trim();
-    if (trimmed.startsWith('*') || trimmed.startsWith('-')) {
-        return text;
-    }
-    return `* ${text}`;
+    const bullet = (trimmed.startsWith('*') || trimmed.startsWith('-'))
+        ? trimmed
+        : `* ${trimmed}`;
+    return bullet;
 }
 
 scrollToggle.addEventListener('click', () => {
@@ -110,15 +110,9 @@ function draftToMarkdown(draft) {
     let md = `# ${draft.title || ''}\n\n`;
     md += `## ${draft.subtitle || ''}\n\n`;
     (draft.sections || []).forEach((sec) => {
-        md += `${sec.section_title || ''}\n`;
-        // Ensure each bullet is rendered as a markdown list item. If the
-        // bullet text doesn't already start with '*' or '-', prepend one.
-        const addBulletPrefix = (txt) => {
-            const trimmed = txt.trim();
-            return (trimmed.startsWith('*') || trimmed.startsWith('-'))
-                ? txt
-                : `* ${txt}`;
-        };
+        md += `${sec.section_title || ''}\n\n`;
+        // Ensure each bullet is rendered as a markdown list item. Trim leading
+        // whitespace and prepend a bullet if needed.
         (sec.section_bullets || []).forEach((b) => {
             let text = bulletToString(b);
             text = addBulletPrefix(text);
@@ -291,15 +285,9 @@ function renderDraft(draft) {
     let md = `## ${draft.title || ''}\n\n`;
     md += `### ${draft.subtitle || ''}\n\n`;
     (draft.sections || []).forEach((sec) => {
-        md += `${sec.section_title || ''}\n`;
-        // Ensure each bullet is rendered as a markdown list item. If the
-        // bullet text doesn't already start with '*' or '-', prepend one.
-        const addBulletPrefix = (txt) => {
-            const trimmed = txt.trim();
-            return (trimmed.startsWith('*') || trimmed.startsWith('-'))
-                ? txt
-                : `* ${txt}`;
-        };
+        md += `${sec.section_title || ''}\n\n`;
+        // Ensure each bullet is rendered as a markdown list item. Trim leadi
+        // whitespace and prepend a bullet if needed.
         (sec.section_bullets || []).forEach((b) => {
             let text = bulletToString(b);
             text = addBulletPrefix(text);
