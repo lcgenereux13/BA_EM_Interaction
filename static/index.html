@@ -103,7 +103,15 @@ function draftToMarkdown(draft) {
     let md = `# ${draft.title || ''}\n\n`;
     md += `## ${draft.subtitle || ''}\n\n`;
     (draft.sections || []).forEach((sec) => {
-        md += `### ${sec.section_title || ''}\n\n`;
+        md += `#### ${sec.section_title || ''}\n\n`;
+        // Ensure each bullet is rendered as a markdown list item. If the
+        // bullet text doesn't already start with '*' or '-', prepend one.
+        const addBulletPrefix = (txt) => {
+            const trimmed = txt.trim();
+            return (trimmed.startsWith('*') || trimmed.startsWith('-'))
+                ? txt
+                : `* ${txt}`;
+        };
         (sec.section_bullets || []).forEach((b) => {
             const raw = bulletToString(b);
             md += `- ${raw.replace(/^[*-]\s*/, '')}\n`;
@@ -275,7 +283,15 @@ function renderDraft(draft) {
     let md = `## ${draft.title || ''}\n\n`;
     md += `### ${draft.subtitle || ''}\n\n`;
     (draft.sections || []).forEach((sec) => {
-        md += `### ${sec.section_title || ''}\n\n`;
+        md += `#### ${sec.section_title || ''}\n\n`;
+        // Ensure each bullet is rendered as a markdown list item. If the
+        // bullet text doesn't already start with '*' or '-', prepend one.
+        const addBulletPrefix = (txt) => {
+            const trimmed = txt.trim();
+            return (trimmed.startsWith('*') || trimmed.startsWith('-'))
+                ? txt
+                : `* ${txt}`;
+        };
         (sec.section_bullets || []).forEach((b) => {
             const raw = bulletToString(b);
             md += `- ${raw.replace(/^[*-]\s*/, '')}\n`;
@@ -286,6 +302,7 @@ function renderDraft(draft) {
     const mdParser = window.markdownit();
     const rendered = mdParser.render(md.trim());
     canvasDiv.innerHTML = `<div class="markdown-body">${rendered}</div>`;
+    console.log(canvasDiv.innerHTML);
     previousDraft = JSON.parse(JSON.stringify(draft));
 }
 

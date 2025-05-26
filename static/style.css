@@ -218,12 +218,14 @@ code,
   padding: 2px 4px;
 }
 
-/* Markdown list styling */
+/* Ensure bullet lists in markdown output show discs */
 .markdown-body ul {
   list-style-type: disc;
   margin-left: 1.5em;
+  padding-left: 0;
 }
 
 .markdown-body li {
-  margin: .25em 0;
+  margin: 0.25em 0;
+
 }
