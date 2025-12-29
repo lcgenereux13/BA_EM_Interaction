@@ -1,8 +1,12 @@
 import type { Express } from "express";
+import express from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
 import { WebSocketServer, WebSocket } from "ws";
 import { crewService } from "./crewService";
+import { spawn } from "child_process";
+import fs from "fs/promises";
+import path from "path";
 import { 
   AgentOutputMessage, 
   SystemMessage, 
@@ -13,6 +17,8 @@ import {
   insertAgentOutputSchema
 } from "@shared/schema";
 import { nanoid } from "nanoid";
+
+const documentsRoot = path.resolve(import.meta.dirname, "..", "..", "documents");
 
 // Store active WebSocket connections
 const clients = new Set<WebSocket>();
@@ -30,10 +36,83 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Initialize HTTP server
   const httpServer = createServer(app);
 
+  app.use("/documents", express.static(documentsRoot));
+
   // Initialize WebSocket server
   const wss = new WebSocketServer({ server: httpServer, path: '/ws' });
 
   // API routes
+  app.get('/api/documents', async (_req, res) => {
+    try {
+      await fs.access(documentsRoot);
+    } catch (error) {
+      return res.json({ files: [], totalCount: 0 });
+    }
+
+    const listFiles = async (dir: string, prefix = "") => {
+      const entries = await fs.readdir(dir, { withFileTypes: true });
+      const files = [];
+
+      for (const entry of entries) {
+        if (entry.name.startsWith(".")) continue;
+        const relativePath = prefix ? `${prefix}/${entry.name}` : entry.name;
+        const absolutePath = path.join(dir, entry.name);
+
+        if (entry.isDirectory()) {
+          files.push(...await listFiles(absolutePath, relativePath));
+          continue;
+        }
+
+        const stats = await fs.stat(absolutePath);
+        const extension = path.extname(entry.name).replace(".", "");
+        const urlPath = relativePath.split(path.sep).map(encodeURIComponent).join("/");
+        files.push({
+          name: entry.name,
+          path: relativePath,
+          url: `/documents/${urlPath}`,
+          size: stats.size,
+          updatedAt: stats.mtime.toISOString(),
+          extension
+        });
+      }
+
+      return files;
+    };
+
+    const files = await listFiles(documentsRoot);
+    files.sort((a, b) => a.path.localeCompare(b.path));
+
+    res.json({ files, totalCount: files.length });
+  });
+
+  app.get('/api/documents/download', async (_req, res) => {
+    try {
+      await fs.access(documentsRoot);
+    } catch (error) {
+      return res.status(404).json({ message: 'Documents directory not found' });
+    }
+
+    res.setHeader("Content-Type", "application/gzip");
+    res.setHeader("Content-Disposition", "attachment; filename=\"documents.tar.gz\"");
+
+    const tarProcess = spawn("tar", ["-czf", "-", "-C", documentsRoot, "."]);
+
+    tarProcess.stdout.pipe(res);
+
+    tarProcess.on("error", (err) => {
+      console.error("Failed to create documents archive", err);
+      if (!res.headersSent) {
+        res.status(500).json({ message: "Failed to create documents archive" });
+      } else {
+        res.end();
+      }
+    });
+
+    tarProcess.stderr.on("data", (data) => {
+      console.error("tar error:", data.toString());
+    });
+  });
+
   app.get('/api/agents', async (req, res) => {
     try {
       const agents = await storage.getAllAgents();
