@@ -1,8 +1,10 @@
 import { useTheme } from "./ui/theme-provider";
 import { Button } from "./ui/button";
+import { Link, useLocation } from "wouter";
 
 export function Header() {
   const { theme, setTheme } = useTheme();
+  const [location] = useLocation();
   
   const toggleTheme = () => {
     const newTheme = theme === "dark" ? "light" : "dark";
@@ -28,9 +30,29 @@ export function Header() {
   return (
     <header className="bg-white dark:bg-neutral-900 border-b border-border h-16 flex items-center px-4">
       <div className="flex justify-between items-center w-full">
-        <div className="flex items-center gap-2">
-          <i className="ri-file-text-line text-primary text-2xl"></i>
-          <h1 className="text-xl font-semibold">Pagemaker</h1>
+        <div className="flex items-center gap-6">
+          <Link href="/" className="flex items-center gap-2">
+            <i className="ri-file-text-line text-primary text-2xl"></i>
+            <h1 className="text-xl font-semibold">Pagemaker</h1>
+          </Link>
+          <nav className="hidden items-center gap-3 text-sm font-medium text-muted-foreground md:flex">
+            <Link
+              href="/"
+              className={location === "/" ? "text-foreground" : "hover:text-foreground"}
+            >
+              Home
+            </Link>
+            <Link
+              href="/aum-trends"
+              className={
+                location === "/aum-trends"
+                  ? "text-foreground"
+                  : "hover:text-foreground"
+              }
+            >
+              AUM Trends
+            </Link>
+          </nav>
         </div>
         
         <div className="flex items-center gap-2">
