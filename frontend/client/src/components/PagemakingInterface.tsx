@@ -1,8 +1,10 @@
 import { useState, useRef, useEffect } from "react";
 import { TaskInput } from "./TaskInput";
-import { DocumentSection, DraftDocument } from "./DocumentSection";
+import { DraftDocument } from "./DocumentSection";
+import { DocumentsSection } from "./DocumentsSection";
 import { AgentOutputMessage, SystemMessage as SystemMessageType, Agent } from "@shared/schema";
 import { useCrewAI } from "@/hooks/useCrewAI";
+import { useDocuments } from "@/hooks/useDocuments";
 import { Button } from "./ui/button";
 import { formatTimestamp } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
@@ -30,6 +32,7 @@ export function PagemakingInterface() {
     clearMessages,
     isLoading
   } = useCrewAI();
+  const { data: documentsData, isLoading: documentsLoading, error: documentsError } = useDocuments();
   
   const [activeSection, setActiveSection] = useState<string | null>(null);
   const [drafts, setDrafts] = useState<PageDraft[]>([]);
@@ -400,8 +403,8 @@ export function PagemakingInterface() {
         </div>
         
 
-        {/* Document Drafts Section - 60% height */}
-        <div className="mb-6" style={{ height: '60%', overflowY: 'auto' }}>
+        {/* Document Drafts Section */}
+        <div className="mb-6" style={{ height: '45%', overflowY: 'auto' }}>
           {drafts.length === 0 ? (
             <div className="text-center p-6 border border-dashed border-border rounded-md text-muted-foreground">
               <i className="ri-draft-line text-2xl mb-2"></i>
@@ -427,8 +430,8 @@ export function PagemakingInterface() {
         </div>
         
 
-        {/* Dedicated Feedback Section - 40% height */}
-        <div className="border border-border rounded-md p-4 mb-4" style={{ height: '40%', overflowY: 'auto' }}>
+        {/* Dedicated Feedback Section */}
+        <div className="border border-border rounded-md p-4 mb-4" style={{ height: '25%', overflowY: 'auto' }}>
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-md font-medium">Feedback History</h3>
             {drafts.filter(draft => draft.feedback).length > 0 ? (
@@ -479,6 +482,13 @@ export function PagemakingInterface() {
             </div>
           )}
         </div>
+
+        <DocumentsSection
+          documents={documentsData?.files ?? []}
+          totalCount={documentsData?.totalCount ?? 0}
+          isLoading={documentsLoading}
+          error={documentsError instanceof Error ? documentsError : null}
+        />
         
         {completionStatus === 'complete' && (
           <div className="flex justify-center mt-4">
